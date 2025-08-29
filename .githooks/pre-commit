@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "🔍 Running ktlint format & check before commit..."
+
+# Auto-fix formatting issues first
+./gradlew -q ktlintFormat
+
+# Verify no issues remain
+./gradlew -q ktlintCheck
+
+# ./gradlew -q test
+
+echo "✅ Pre-commit checks passed!"
