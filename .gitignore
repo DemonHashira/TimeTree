@@ -7,11 +7,13 @@
 
 # === Gradle ===
 .gradle/
-/!gradle/wrapper/gradle-wrapper.jar
-!gradle/wrapper/gradle-wrapper.properties
-
-# Kotlin Gradle plugin data
 .kotlin/
+
+# Keep Gradle wrapper files
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+gradlew
+gradlew.bat
 
 # === IntelliJ IDEA ===
 .idea/
@@ -26,8 +28,7 @@
 hs_err_pid*
 replay_pid*
 
-# === Archive / Packages ===
-*.jar
+# === Archive / Packages (general artifacts) ===
 *.war
 *.nar
 *.ear
