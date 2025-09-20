@@ -2,6 +2,7 @@ plugins {
     kotlin("jvm") version "2.2.10"
     application
     id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
+    id("com.gradleup.shadow") version "9.1.0"
 }
 
 group = "dev.kamisama"
@@ -33,4 +34,10 @@ tasks.withType<JavaExec>().configureEach {
 
 application {
     mainClass.set("dev.kamisama.MainKt")
+}
+
+tasks.shadowJar {
+    archiveBaseName.set("timetree")
+    archiveClassifier.set("")
+    archiveVersion.set("")
 }
