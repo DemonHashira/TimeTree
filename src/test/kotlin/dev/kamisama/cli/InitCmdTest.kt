@@ -8,6 +8,9 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import java.nio.file.Files
 
+/**
+ * Tests for the InitCmd functionality - verifies repository initialization.
+ */
 class InitCmdTest :
     StringSpec({
 
@@ -20,6 +23,7 @@ class InitCmdTest :
             result.statusCode shouldBe 0
             result.stdout shouldContain "Initialized TimeTree repo"
 
+            // Verify the repository structure was created
             Files.isDirectory(repoLayout.meta) shouldBe true
             Files.isDirectory(repoLayout.objects) shouldBe true
             Files.isDirectory(repoLayout.refsHeads) shouldBe true
@@ -37,7 +41,7 @@ class InitCmdTest :
             first.statusCode shouldBe 0
             first.stdout shouldContain "Initialized TimeTree repo"
 
-            // Second init
+            // Second init - should detect an existing repository
             val second = cmd.test(argv = emptyArray())
             second.statusCode shouldBe 0
             second.stdout shouldContain "Reinitialized existing TimeTree repository"
