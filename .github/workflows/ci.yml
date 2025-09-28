@@ -2,32 +2,50 @@ name: CI
 
 on:
     push:
-        branches: [ "**" ]
+        branches: ['**']
     pull_request:
 
 jobs:
     build:
         runs-on: ubuntu-latest
-
         steps:
-            -   name: Checkout
-                uses: actions/checkout@v4
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
 
-            -   name: Validate Gradle Wrapper
-                uses: gradle/wrapper-validation-action@v2
+            # Run wrapper validation only if wrapper files changed in this ref
+            - name: Detect wrapper changes
+              id: changes
+              uses: dorny/paths-filter@v3
+              with:
+                  filters: |
+                      wrapper:
+                        - 'gradlew'
+                        - 'gradlew.bat'
+                        - 'gradle/wrapper/**'
 
-            -   name: Set up JDK 21
-                uses: actions/setup-java@v4
-                with:
-                    distribution: temurin
-                    java-version: '21'
-                    cache: gradle
+            # Auto-retry the validation up to 3 times (handles flaky downloads)
+            - name: Validate Gradle Wrapper (retry x3)
+              if: steps.changes.outputs.wrapper == 'true'
+              uses: Wandalen/wretry.action@v3.5
+              with:
+                  action: gradle/wrapper-validation-action@v2
+                  attempt_limit: 3
+                  attempt_delay: 5000
 
-            -   name: Gradle ktlint check
-                run: ./gradlew --no-daemon ktlintCheck
+            - name: Set up JDK 21
+              uses: actions/setup-java@v4
+              with:
+                  distribution: temurin
+                  java-version: '21'
+                  cache: gradle
 
-            -   name: Run tests
-                run: ./gradlew --no-daemon test
+            - name: Gradle ktlint check
+              run: ./gradlew --no-daemon ktlintCheck
 
-            -   name: Build (optional)
-                run: ./gradlew --no-daemon build
+            - name: Run tests
+              run: ./gradlew --no-daemon test
+
+            - name: Build (optional)
+              run: ./gradlew --no-daemon build
