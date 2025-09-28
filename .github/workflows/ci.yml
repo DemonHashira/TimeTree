@@ -28,7 +28,7 @@ jobs:
             # Auto-retry the validation up to 3 times (handles flaky downloads)
             - name: Validate Gradle Wrapper (retry x3)
               if: steps.changes.outputs.wrapper == 'true'
-              uses: Wandalen/wretry.action@v3.5
+              uses: Wandalen/wretry.action@v3.7.2
               with:
                   action: gradle/wrapper-validation-action@v2
                   attempt_limit: 3
