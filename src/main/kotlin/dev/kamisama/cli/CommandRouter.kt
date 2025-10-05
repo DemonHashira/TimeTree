@@ -9,5 +9,6 @@ object CommandRouter {
             .subcommands(
                 InitCmd(),
                 AddCmd(),
+                HashObjectCmd(),
             )
 }
