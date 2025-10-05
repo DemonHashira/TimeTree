@@ -10,5 +10,6 @@ object CommandRouter {
                 InitCmd(),
                 AddCmd(),
                 HashObjectCmd(),
+                CommitCmd(),
             )
 }
