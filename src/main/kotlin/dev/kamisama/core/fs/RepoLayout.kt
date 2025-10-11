@@ -36,31 +36,36 @@ data class RepoLayout(
 }
 
 /**
- * Checks if a TimeTree repository is already initialized.
+ * Checks if a TimeTree repository is fully initialized.
+ * Returns true only if .timetree is a directory AND all required components exist.
  */
-fun isInitialized(repo: RepoLayout): Boolean = Files.isDirectory(repo.meta)
+fun isInitialized(repo: RepoLayout): Boolean =
+    Files.isDirectory(repo.meta) &&
+        Files.isDirectory(repo.objects) &&
+        Files.isDirectory(repo.refsHeads) &&
+        Files.exists(repo.head)
 
 /**
  * Initializes a new TimeTree repository if it doesn't already exist.
  * Creates the necessary directory structure and initial HEAD file.
+ * Repairs partially initialized repositories by creating missing components.
  */
 fun ensureInitialized(
     repo: RepoLayout,
     defaultBranch: String,
 ): Boolean {
-    // Skip initialization if the repository already exists
-    if (isInitialized(repo)) return false
+    // Track if this is a fresh initialization (not a repair)
+    val isAlreadyInitialized = isInitialized(repo)
 
-    // Create a directory structure for storing objects (file content)
+    // Create or repair directory structure
     Files.createDirectories(repo.objects)
-
-    // Create a directory structure for storing branch references
     Files.createDirectories(repo.refsHeads)
 
-    // Create a HEAD file pointing to the default branch
-    // Format follows Git convention: "ref: refs/heads/branchname"
-    AtomicFile(repo.head).writeUtf8("ref: refs/heads/$defaultBranch\n")
+    // Create a HEAD file if missing
+    if (!Files.exists(repo.head)) {
+        AtomicFile(repo.head).writeUtf8("ref: refs/heads/$defaultBranch\n")
+    }
 
-    // Return true to indicate a new repository was created
-    return true
+    // Return true only if this was a brand-new initialization
+    return !isAlreadyInitialized
 }

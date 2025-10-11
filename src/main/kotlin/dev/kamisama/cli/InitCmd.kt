@@ -2,8 +2,11 @@ package dev.kamisama.cli
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
+import com.github.ajalt.clikt.core.ProgramResult
 import dev.kamisama.core.fs.RepoLayout
 import dev.kamisama.core.fs.ensureInitialized
+import java.io.IOException
+import java.nio.file.Files
 
 /**
  * The command that initializes a new TimeTree repository.
@@ -18,18 +21,32 @@ class InitCmd(
     override fun help(context: Context) = "Initialize a new TimeTree repository in the current directory"
 
     override fun run() {
-        // Get the repository layout (directories and structure)
         val repo = repoProvider()
 
-        // Initialize the repository structure and return whether it was newly created
-        // ensureInitialized creates the necessary directories (.timetree) and initial files
-        val created = ensureInitialized(repo, defaultBranch)
+        // Validate preconditions before attempting initialization
+        if (Files.exists(repo.meta) && !Files.isDirectory(repo.meta)) {
+            echo("Error: ${repo.meta} exists but is not a directory", err = true)
+            throw ProgramResult(1)
+        }
 
-        // Provide appropriate feedback based on whether this was a new or existing repo
-        if (created) {
-            echo("Initialized TimeTree repo in ${repo.meta}")
-        } else {
-            echo("Reinitialized existing TimeTree repository in ${repo.meta}")
+        if (!Files.isWritable(repo.root)) {
+            echo("Error: No write permission in ${repo.root}", err = true)
+            throw ProgramResult(1)
+        }
+
+        try {
+            // Initialize or repair the repository
+            val created = ensureInitialized(repo, defaultBranch)
+
+            // Provide appropriate feedback
+            if (created) {
+                echo("Initialized TimeTree repo in ${repo.meta}")
+            } else {
+                echo("Reinitialized existing TimeTree repository in ${repo.meta}")
+            }
+        } catch (e: IOException) {
+            echo("Error: Failed to initialize repository: ${e.message}", err = true)
+            throw ProgramResult(1)
         }
     }
 }
