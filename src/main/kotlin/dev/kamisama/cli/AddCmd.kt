@@ -9,16 +9,14 @@ import dev.kamisama.core.index.Index
 import dev.kamisama.core.objects.FsObjectStore
 import java.io.File
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.io.path.isRegularFile
+import kotlin.streams.asSequence
 
-/**
- * The add command that adds file contents to the staging index.
- */
 class AddCmd(
-    // Provider function for repository layout, defaults to the current working directory
     private val repoProvider: () -> RepoLayout = RepoLayout::fromWorkingDir,
 ) : CliktCommand(name = "add") {
-    // Accept multiple file paths as command line arguments
     private val inputs by argument(name = "path").multiple()
 
     override fun help(context: Context) = "Add file contents to the index"
@@ -26,51 +24,105 @@ class AddCmd(
     override fun run() {
         val repo = repoProvider()
 
-        // Exit early if no files specified
         if (inputs.isEmpty()) {
             echo("Nothing specified, nothing added.")
             return
         }
 
-        // Get normalized absolute paths for the repository root and metadata directory
         val root = repo.root.toAbsolutePath().normalize()
         val meta = repo.meta.toAbsolutePath().normalize()
 
-        // Process each input file path
+        // Collect all resolved file paths
+        val filesToAdd = mutableSetOf<Path>()
+
         for (raw in inputs) {
-            val p = Paths.get(raw)
-            val abs = p.toAbsolutePath().normalize()
+            val p =
+                if (Paths.get(raw).isAbsolute) {
+                    Paths.get(raw).toAbsolutePath().normalize()
+                } else {
+                    root.resolve(raw).toAbsolutePath().normalize()
+                }
 
-            // Validation 1: File must be inside the repository root directory
+            // Check if it's a glob pattern
+            if (raw.contains('*') || raw.contains('?')) {
+                val matcher = root.fileSystem.getPathMatcher("glob:$raw")
+                Files
+                    .walk(root)
+                    .asSequence()
+                    .filter { it.isRegularFile() && matcher.matches(root.relativize(it)) }
+                    .filter { !it.startsWith(meta) }
+                    .forEach { filesToAdd.add(it) }
+                continue
+            }
+
+            // Handle "." to mean current directory recursively
+            if (raw == ".") {
+                Files
+                    .walk(root)
+                    .asSequence()
+                    .filter { it.isRegularFile() && !it.startsWith(meta) }
+                    .forEach { filesToAdd.add(it) }
+                continue
+            }
+
+            // Handle directories recursively
+            if (Files.isDirectory(p)) {
+                Files
+                    .walk(p)
+                    .asSequence()
+                    .filter { it.isRegularFile() }
+                    .filter { it.startsWith(root) && !it.startsWith(meta) }
+                    .forEach { filesToAdd.add(it) }
+                continue
+            }
+
+            // Regular file
+            if (Files.isRegularFile(p)) {
+                if (!p.startsWith(meta)) {
+                    filesToAdd.add(p)
+                } else {
+                    echo("skip: $raw (internal .timetree directory)")
+                }
+            } else {
+                echo("skip: $raw (not found or not a regular file)")
+            }
+        }
+
+        // Load the current index to check for already-staged files
+        val currentIndex = Index.load(repo)
+
+        // Track how many files were actually staged
+        var stagedCount = 0
+
+        // Now process all collected files
+        for (abs in filesToAdd) {
             if (!abs.startsWith(root)) {
-                echo("skip: $raw (outside repository)")
+                echo("skip: $abs (outside repository)")
                 continue
             }
-
-            // Validation 2: Don't allow staging internal metadata files
             if (abs.startsWith(meta)) {
-                echo("skip: $raw (internal .timetree directory)")
+                echo("skip: $abs (internal .timetree directory)")
                 continue
             }
 
-            // Validation 3: Only regular files can be staged (no directories, symlinks, etc.)
-            if (!Files.isRegularFile(abs)) {
-                echo("skip: $raw (not a regular file)")
-                continue
-            }
-
-            // Convert absolute path to a repository-relative path with forward slashes
-            // This ensures a consistent path format regardless of OS
             val rel = root.relativize(abs).toString().replace(File.separatorChar, '/')
-
-            // Store file content as a blob object and get its hash ID
             val id = FsObjectStore.writeBlob(repo, abs)
 
-            // Update the index with the file path and blob ID mapping
-            Index.update(repo, rel, id)
+            // Check if a file is already staged with the same content
+            val existingId = currentIndex[rel]
+            if (existingId != null && existingId == id) {
+                // File is already staged with the same content, skip it
+                continue
+            }
 
-            // Confirm successful staging to user
+            Index.update(repo, rel, id)
             echo("staged: $rel -> ${id.toHex()}")
+            stagedCount++
+        }
+
+        // If no files were staged, inform the user
+        if (stagedCount == 0 && filesToAdd.isNotEmpty()) {
+            echo("Nothing to stage - all files are already up to date.")
         }
     }
 }
