@@ -61,4 +61,95 @@ class CommitCmdTest :
             val treeBody = Files.readString(treeObj, StandardCharsets.UTF_8)
             treeBody.shouldContain("100644 a.txt\t${blobId.toHex()}\n")
         }
+
+        "commit rejects duplicate commit when tree hasn't changed" {
+            // --- Arrange: temp repo + init ---
+            val tmpRoot: Path = tempdir().toPath()
+            val repo = RepoLayout(tmpRoot)
+            ensureInitialized(repo, defaultBranch = "master")
+
+            // Create one file in the worktree
+            val file = repo.root.resolve("a.txt")
+            Files.writeString(file, "v1\n")
+
+            // Stage it via core
+            val blobId = FsObjectStore.writeBlob(repo, file)
+            Index.update(repo, "a.txt", blobId)
+
+            // --- Act: run commit command first time ---
+            val out1 = CommitCmd { repo }.test(arrayOf("-m", "c1")).stdout
+            out1.shouldContain("[master]")
+
+            // Get the first commit ID
+            val branchRef = repo.refsHeads.resolve("master")
+            val firstCommitHex = Files.readString(branchRef).trim()
+
+            // --- Act: run commit command second time with same staged content ---
+            val result = CommitCmd { repo }.test(arrayOf("-m", "c2"))
+
+            // --- Assert: second commit should fail ---
+            result.statusCode shouldBe 1
+            result.stderr.shouldContain("Nothing to commit - tree is identical to parent commit")
+
+            // Verify the branch still points to the first commit (no new commit created)
+            val currentCommitHex = Files.readString(branchRef).trim()
+            currentCommitHex shouldBe firstCommitHex
+        }
+
+        "commit allows duplicate tree with --allow-empty flag" {
+            // --- Arrange: temp repo + init ---
+            val tmpRoot: Path = tempdir().toPath()
+            val repo = RepoLayout(tmpRoot)
+            ensureInitialized(repo, defaultBranch = "master")
+
+            // Create one file in the worktree
+            val file = repo.root.resolve("a.txt")
+            Files.writeString(file, "v1\n")
+
+            // Stage it via core
+            val blobId = FsObjectStore.writeBlob(repo, file)
+            Index.update(repo, "a.txt", blobId)
+
+            // --- Act: run commit command first time ---
+            val out1 = CommitCmd { repo }.test(arrayOf("-m", "c1")).stdout
+            out1.shouldContain("[master]")
+
+            // Get the first commit ID
+            val branchRef = repo.refsHeads.resolve("master")
+            val firstCommitHex = Files.readString(branchRef).trim()
+
+            // --- Act: run commit command second time with --allow-empty ---
+            val result = CommitCmd { repo }.test(arrayOf("-m", "c2", "--allow-empty"))
+
+            // --- Assert: second commit should succeed ---
+            result.statusCode shouldBe 0
+            result.stdout.shouldContain("[master]")
+
+            // Verify a new commit was created
+            val secondCommitHex = Files.readString(branchRef).trim()
+            secondCommitHex.length shouldBe 40
+            (secondCommitHex != firstCommitHex) shouldBe true
+
+            // Verify both commits point to the same tree
+            val firstCommitObj = repo.objects.resolve(firstCommitHex.take(2)).resolve(firstCommitHex.substring(2))
+            val firstCommitBody = Files.readString(firstCommitObj, StandardCharsets.UTF_8)
+            val firstTreeHex =
+                Regex("""(?m)^tree ([0-9a-f]{40})$""")
+                    .find(firstCommitBody)
+                    ?.groupValues
+                    ?.get(1)
+                    ?: error("First commit missing 'tree' header")
+
+            val secondCommitObj = repo.objects.resolve(secondCommitHex.take(2)).resolve(secondCommitHex.substring(2))
+            val secondCommitBody = Files.readString(secondCommitObj, StandardCharsets.UTF_8)
+            val secondTreeHex =
+                Regex("""(?m)^tree ([0-9a-f]{40})$""")
+                    .find(secondCommitBody)
+                    ?.groupValues
+                    ?.get(1)
+                    ?: error("Second commit missing 'tree' header")
+
+            // Both commits should reference the same tree
+            firstTreeHex shouldBe secondTreeHex
+        }
     })
