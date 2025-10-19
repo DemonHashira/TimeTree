@@ -32,7 +32,7 @@ class AddCmdTest :
             val cmd = AddCmd { repo }
             val result = cmd.test(argv = arrayOf(nested.toAbsolutePath().toString()))
             result.statusCode shouldBe 0
-            result.stdout shouldContain "staged: dir/sub/hello.txt ->"
+            result.stdout shouldContain "add 'dir/sub/hello.txt'"
 
             // Verify index contains a normalized relative path
             val index = Files.readAllLines(repo.meta.resolve("index"))
@@ -45,12 +45,12 @@ class AddCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Try to stage HEAD file (should be blocked as internal metadata)
+            // Try to stage HEAD file (should be silently skipped)
             val head = repo.head
             val cmd = AddCmd { repo }
             val result = cmd.test(argv = arrayOf(head.toString()))
             result.statusCode shouldBe 0
-            result.stdout shouldContain "skip: $head (internal .timetree directory)"
+            result.stdout shouldContain "Nothing specified, nothing added."
 
             // Verify the index is empty (no internal .timetree files were added)
             val indexPath = repo.meta.resolve("index")
@@ -70,8 +70,8 @@ class AddCmdTest :
             val cmd = AddCmd { repo }
             val result = cmd.test(argv = arrayOf("*.txt"))
             result.statusCode shouldBe 0
-            result.stdout shouldContain "staged: test1.txt ->"
-            result.stdout shouldContain "staged: test2.txt ->"
+            result.stdout shouldContain "add 'test1.txt'"
+            result.stdout shouldContain "add 'test2.txt'"
 
             val index = Files.readAllLines(repo.meta.resolve("index"))
             index.any { it.endsWith(" test1.txt") } shouldBe true
@@ -93,8 +93,8 @@ class AddCmdTest :
             val cmd = AddCmd { repo }
             val result = cmd.test(argv = arrayOf("src"))
             result.statusCode shouldBe 0
-            result.stdout shouldContain "staged: src/main/App.kt ->"
-            result.stdout shouldContain "staged: src/main/Utils.kt ->"
+            result.stdout shouldContain "add 'src/main/App.kt'"
+            result.stdout shouldContain "add 'src/main/Utils.kt'"
 
             val index = Files.readAllLines(repo.meta.resolve("index"))
             index.any { it.endsWith(" src/main/App.kt") } shouldBe true
@@ -115,8 +115,8 @@ class AddCmdTest :
             val cmd = AddCmd { repo }
             val result = cmd.test(argv = arrayOf("."))
             result.statusCode shouldBe 0
-            result.stdout shouldContain "staged: root.txt ->"
-            result.stdout shouldContain "staged: dir/nested.txt ->"
+            result.stdout shouldContain "add 'root.txt'"
+            result.stdout shouldContain "add 'dir/nested.txt'"
 
             val index = Files.readAllLines(repo.meta.resolve("index"))
             index.any { it.endsWith(" root.txt") } shouldBe true
@@ -134,7 +134,7 @@ class AddCmdTest :
             val cmd = AddCmd { repo }
             val result = cmd.test(argv = arrayOf("."))
             result.statusCode shouldBe 0
-            result.stdout shouldContain "staged: tracked.txt ->"
+            result.stdout shouldContain "add 'tracked.txt'"
 
             val index = Files.readAllLines(repo.meta.resolve("index"))
             index.any { it.endsWith(" tracked.txt") } shouldBe true
@@ -150,7 +150,7 @@ class AddCmdTest :
             val cmd = AddCmd { repo }
             val result = cmd.test(argv = arrayOf("missing.txt"))
             result.statusCode shouldBe 0
-            result.stdout shouldContain "skip: missing.txt (not found or not a regular file)"
+            result.stdout shouldContain "Nothing specified, nothing added."
 
             val indexPath = repo.meta.resolve("index")
             val lines = if (Files.exists(indexPath)) Files.readAllLines(indexPath) else emptyList()
@@ -167,15 +167,15 @@ class AddCmdTest :
             val cmd = AddCmd { repo }
             val result1 = cmd.test(argv = arrayOf("unchanged.txt"))
             result1.statusCode shouldBe 0
-            result1.stdout shouldContain "staged: unchanged.txt ->"
+            result1.stdout shouldContain "add 'unchanged.txt'"
 
             // Try to stage the same file again without changes
             val result2 = cmd.test(argv = arrayOf("unchanged.txt"))
             result2.statusCode shouldBe 0
-            // Should not show a "staged" message since a file hasn't changed
-            result2.stdout shouldNotContain "staged: unchanged.txt ->"
-            // Should show a "nothing to stage" message
-            result2.stdout shouldContain "Nothing to stage - all files are already up to date."
+            // Should not show an "add" message since file hasn't changed
+            result2.stdout shouldNotContain "add 'unchanged.txt'"
+            // Should show an "already staged" message
+            result2.stdout shouldContain "All 1 file(s) already staged and up-to-date"
         }
 
         "add should re-stage files when content changes" {
@@ -189,14 +189,14 @@ class AddCmdTest :
             val cmd = AddCmd { repo }
             val result1 = cmd.test(argv = arrayOf("modified.txt"))
             result1.statusCode shouldBe 0
-            result1.stdout shouldContain "staged: modified.txt ->"
+            result1.stdout shouldContain "add 'modified.txt'"
 
             // Modify the file
             Files.writeString(file, "changed content")
 
-            // Stage it again - should show a staged message since content changed
+            // Stage it again - should show an update message since content changed
             val result2 = cmd.test(argv = arrayOf("modified.txt"))
             result2.statusCode shouldBe 0
-            result2.stdout shouldContain "staged: modified.txt ->"
+            result2.stdout shouldContain "update 'modified.txt'"
         }
     })

@@ -69,6 +69,26 @@ object FsObjectStore {
         return id
     }
 
+    /**
+     * Computes the blob hash for a file WITHOUT writing it to the object store.
+     * This is used for read-only operations like status checks.
+     */
+    fun computeBlobHash(path: Path): ObjectId {
+        val size = Files.size(path)
+        val header = ObjectHeaders.blobHeader(size)
+        val hasher: Sha1Like = Sha1()
+        hasher.update(header)
+        Files.newInputStream(path).use { input ->
+            val buf = ByteArray(DEFAULT_BUFFER_SIZE)
+            while (true) {
+                val n = input.read(buf)
+                if (n <= 0) break
+                hasher.update(buf, 0, n)
+            }
+        }
+        return hasher.digest()
+    }
+
     fun writeBlob(
         repo: RepoLayout,
         path: Path,

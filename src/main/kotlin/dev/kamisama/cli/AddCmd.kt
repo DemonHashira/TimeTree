@@ -91,38 +91,62 @@ class AddCmd(
         // Load the current index to check for already-staged files
         val currentIndex = Index.load(repo)
 
-        // Track how many files were actually staged
-        var stagedCount = 0
+        // Track different file categories
+        val added = mutableListOf<String>()
+        val updated = mutableListOf<String>()
+        val unchanged = mutableListOf<String>()
 
         // Now process all collected files
         for (abs in filesToAdd) {
             if (!abs.startsWith(root)) {
-                echo("skip: $abs (outside repository)")
+                echo("warning: '$abs' is outside repository")
                 continue
             }
             if (abs.startsWith(meta)) {
-                echo("skip: $abs (internal .timetree directory)")
-                continue
+                continue // silently skip .timetree internals
             }
 
             val rel = root.relativize(abs).toString().replace(File.separatorChar, '/')
             val id = FsObjectStore.writeBlob(repo, abs)
 
-            // Check if a file is already staged with the same content
+            // Check if file is already staged with the same content
             val existingId = currentIndex[rel]
-            if (existingId != null && existingId == id) {
-                // File is already staged with the same content, skip it
-                continue
+            when {
+                existingId == null -> {
+                    // New file - not previously in index
+                    Index.update(repo, rel, id)
+                    added.add(rel)
+                }
+                existingId != id -> {
+                    // File exists in index but content changed
+                    Index.update(repo, rel, id)
+                    updated.add(rel)
+                }
+                else -> {
+                    // File already staged with identical content
+                    unchanged.add(rel)
+                }
             }
-
-            Index.update(repo, rel, id)
-            echo("staged: $rel -> ${id.toHex()}")
-            stagedCount++
         }
 
-        // If no files were staged, inform the user
-        if (stagedCount == 0 && filesToAdd.isNotEmpty()) {
-            echo("Nothing to stage - all files are already up to date.")
+        // Display summary
+        if (added.isNotEmpty()) {
+            added.sorted().forEach { echo("add '$it'") }
+        }
+        if (updated.isNotEmpty()) {
+            updated.sorted().forEach { echo("update '$it'") }
+        }
+        if (unchanged.isNotEmpty() && (added.isEmpty() && updated.isEmpty())) {
+            // Only show unchanged if nothing was actually staged
+            echo("All ${unchanged.size} file(s) already staged and up-to-date")
+        }
+
+        // Final summary
+        val totalChanged = added.size + updated.size
+        if (totalChanged == 0 && filesToAdd.isEmpty()) {
+            echo("Nothing specified, nothing added.")
+        } else if (totalChanged > 0) {
+            echo("Staged $totalChanged file(s) for commit")
         }
     }
 }
