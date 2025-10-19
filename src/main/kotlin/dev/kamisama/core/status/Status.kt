@@ -34,18 +34,19 @@ object Status {
      * - staged: files where index differs from HEAD
      * - unstaged: files where the working tree differs from index
      * - untracked: files in the working tree but not in index
+     *
+     * Performance: Uses lazy evaluation - only hashes tracked files, not all files in the working tree.
      */
     fun compute(repo: RepoLayout): StatusResult {
+        val root = repo.root.toAbsolutePath().normalize()
+
         // 1. Load index
         val index = Index.load(repo)
 
         // 2. Load HEAD tree (if it exists)
         val headTree = loadHeadTree(repo)
 
-        // 3. Collect working tree files
-        val workingFiles = collectWorkingFiles(repo)
-
-        // 4. Classify files
+        // 3. Classify files
         val staged = mutableListOf<String>()
         val unstaged = mutableListOf<String>()
         val untracked = mutableListOf<String>()
@@ -65,25 +66,24 @@ object Status {
             }
         }
 
-        // Check for unstaged and untracked files
-        for ((path, workingHash) in workingFiles) {
-            if (path in index) {
-                // File is tracked - check if modified
-                if (index[path] != workingHash) {
+        // Lazy evaluation: Only hash tracked files to check for modifications
+        // This is much faster than hashing all files in the working tree
+        for ((path, indexId) in index) {
+            val filePath = root.resolve(path)
+            if (Files.exists(filePath) && Files.isRegularFile(filePath)) {
+                // File exists - compute hash to check if modified
+                val workingHash = FsObjectStore.computeBlobHash(filePath)
+                if (workingHash != indexId) {
                     unstaged.add(path)
                 }
             } else {
-                // File is not in index - untracked
-                untracked.add(path)
-            }
-        }
-
-        // Check for deleted files (in the index but not in the working tree)
-        for ((path, _) in index) {
-            if (path !in workingFiles) {
+                // File is tracked but deleted from the working tree
                 unstaged.add(path)
             }
         }
+
+        // Collect untracked files (files not in index)
+        untracked.addAll(collectUntrackedFiles(repo, index.keys))
 
         return StatusResult(
             staged = staged.sorted(),
@@ -175,14 +175,18 @@ object Status {
     }
 
     /**
-     * Collects all files in the working tree with their computed object IDs.
-     * Excludes the .timetree directory.
-     * This is a read-only operation - it only computes hashes without writing to the object store.
+     * Collects untracked files in the working tree.
+     * Excludes the .timetree directory and files already in the index.
+     *
+     * This is a read-only operation that only walks the tree without hashing files.
      */
-    private fun collectWorkingFiles(repo: RepoLayout): Map<String, ObjectId> {
+    private fun collectUntrackedFiles(
+        repo: RepoLayout,
+        trackedFiles: Set<String>,
+    ): List<String> {
         val root = repo.root.toAbsolutePath().normalize()
         val meta = repo.meta.toAbsolutePath().normalize()
-        val result = mutableMapOf<String, ObjectId>()
+        val untracked = mutableListOf<String>()
 
         Files
             .walk(root)
@@ -191,11 +195,12 @@ object Status {
             .filter { !it.startsWith(meta) }
             .forEach { path ->
                 val relativePath = root.relativize(path).toString().replace(File.separatorChar, '/')
-                // Compute the hash WITHOUT writing to the object store
-                val id = FsObjectStore.computeBlobHash(path)
-                result[relativePath] = id
+                // Only add if not already tracked in the index
+                if (relativePath !in trackedFiles) {
+                    untracked.add(relativePath)
+                }
             }
 
-        return result
+        return untracked
     }
 }

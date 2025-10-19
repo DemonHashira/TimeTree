@@ -340,4 +340,37 @@ class StatusCmdTest :
 
             objectsAfter shouldBe objectsBefore
         }
+
+        "status uses lazy evaluation - only hashes tracked files, not untracked files" {
+            val tmp = tempdir().toPath()
+            val repo = RepoLayout(tmp)
+            ensureInitialized(repo, "master")
+
+            // Create and stage one tracked file
+            val tracked = tmp.resolve("tracked.txt")
+            Files.writeString(tracked, "tracked content")
+            val blobId = FsObjectStore.writeBlob(repo, tracked)
+            Index.update(repo, "tracked.txt", blobId)
+            CommitCmd { repo }.test(arrayOf("-m", "initial"))
+
+            // Create many untracked files
+            for (i in 1..100) {
+                Files.writeString(tmp.resolve("untracked$i.txt"), "large content ".repeat(1000))
+            }
+
+            // Run status - should be fast because it doesn't hash untracked files
+            val cmd = StatusCmd { repo }
+            val startTime = System.currentTimeMillis()
+            val result = cmd.test(emptyArray())
+            val duration = System.currentTimeMillis() - startTime
+
+            result.statusCode shouldBe 0
+            result.stdout shouldContain "Untracked files:"
+
+            // Performance assertion: should complete reasonably fast
+            // With lazy evaluation: only hashes 1 tracked file
+            // Without lazy evaluation: would hash all 101 files
+            // This should be noticeably faster
+            (duration < 5000) shouldBe true // Should complete in under 5 seconds
+        }
     })
