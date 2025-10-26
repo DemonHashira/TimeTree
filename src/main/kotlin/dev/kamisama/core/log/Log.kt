@@ -25,15 +25,25 @@ data class CommitEntry(
     /**
      * Returns abbreviated commit ID (first 12 characters).
      */
-    fun abbreviatedId(): String = id.toHex().take(12)
+    fun abbreviatedId(): String = id.toHex()
 
     /**
      * Returns a formatted timestamp.
      */
     fun formattedTimestamp(): String {
         val instant = Instant.ofEpochSecond(timestamp)
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-        return instant.atZone(ZoneOffset.UTC).format(formatter)
+
+        // Parse timezone
+        val zoneOffset =
+            try {
+                ZoneOffset.of(timezone)
+            } catch (e: Exception) {
+                ZoneOffset.UTC
+            }
+
+        val zonedDateTime = instant.atZone(zoneOffset)
+        val formatter = DateTimeFormatter.ofPattern("EEE MMM d HH:mm:ss yyyy Z")
+        return zonedDateTime.format(formatter)
     }
 
     /**

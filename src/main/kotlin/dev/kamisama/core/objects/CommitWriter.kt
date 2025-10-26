@@ -2,14 +2,29 @@ package dev.kamisama.core.objects
 
 import dev.kamisama.core.hash.ObjectId
 import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 object CommitWriter {
     data class Meta(
         val authorName: String = System.getProperty("user.name", "User"),
         val authorEmail: String = "user@example.com",
         val whenEpochSeconds: Long = Instant.now().epochSecond,
-        val timezone: String = "+0000",
-    )
+        val timezone: String = getLocalTimezone(),
+    ) {
+        companion object {
+            /**
+             * Gets the local timezone offset in Git format (e.g., "+0300", "-0500").
+             */
+            private fun getLocalTimezone(): String {
+                val now = Instant.now()
+                val zoneId = ZoneId.systemDefault()
+                val zonedDateTime = now.atZone(zoneId)
+                val formatter = DateTimeFormatter.ofPattern("Z")
+                return zonedDateTime.format(formatter)
+            }
+        }
+    }
 
     /** Serialize a commit and return its id using the provided persist function. */
     fun write(

@@ -106,7 +106,7 @@ class LogCmdTest :
             (secondIdx in (thirdIdx + 1)..<firstIdx) shouldBe true
         }
 
-        "log should show abbreviated commit IDs (12 characters)" {
+        "log should show abbreviated commit IDs" {
             val tmp = tempdir().toPath()
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
@@ -127,7 +127,7 @@ class LogCmdTest :
             val commitId = commitLine.removePrefix("commit ").trim()
 
             // Verify it's abbreviated (12 chars)
-            commitId.length shouldBe 12
+            commitId.length shouldBe 40
         }
 
         "log with -n flag should limit number of commits shown" {
@@ -197,7 +197,7 @@ class LogCmdTest :
             messageLine.trim() shouldBe "First line of commit"
         }
 
-        "log should format timestamp in readable format" {
+        "log should format timestamp in Git style" {
             val tmp = tempdir().toPath()
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
@@ -216,11 +216,23 @@ class LogCmdTest :
             // Should have a Date line with a formatted timestamp
             val dateLine = result.stdout.lines().first { it.startsWith("Date:") }
 
-            // Should contain a year-month-day format
-            dateLine shouldContain Regex("""\d{4}-\d{2}-\d{2}""")
+            // Git format: "DayOfWeek Month Day HH:mm:ss Year Timezone"
+            // Example: "Date:   Thu Oct 19 14:30:45 2025 +0000"
 
-            // Should contain a time format
+            // Should contain day of the week (3 letters)
+            dateLine shouldContain Regex("""(Mon|Tue|Wed|Thu|Fri|Sat|Sun)""")
+
+            // Should contain a month (3 letters)
+            dateLine shouldContain Regex("""(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)""")
+
+            // Should contain time format HH:mm:ss
             dateLine shouldContain Regex("""\d{2}:\d{2}:\d{2}""")
+
+            // Should contain a year (4 digits)
+            dateLine shouldContain Regex("""\d{4}""")
+
+            // Should contain timezone offset
+            dateLine shouldContain Regex("""[+-]\d{4}""")
         }
 
         "log should show author name and email" {
