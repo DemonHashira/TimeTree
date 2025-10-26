@@ -10,7 +10,7 @@ object Refs {
     data class Head(
         val refPath: String?,
         val id: ObjectId?,
-    ) // refPath null => detached
+    )
 
     /** Read HEAD; if it's a symbolic ref, also read the current tip id (if any). */
     fun readHead(repo: RepoLayout): Head {

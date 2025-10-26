@@ -12,7 +12,7 @@ import java.nio.file.StandardOpenOption
 /**
  * Stores, reads and retrieves blob objects in the filesystem.
  * Layout: .timetree/objects/<hh>/<rest>
- * Hash = SHA-1 over: "timetree:v1\0blob <size>\0" + content.
+ * Hash = SHA-1 over: "timetree:v1\0<type> <size>\0" + content.
  */
 object FsObjectStore {
     // single shared writer for bytes already in memory

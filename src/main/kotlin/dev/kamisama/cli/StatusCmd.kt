@@ -43,7 +43,9 @@ class StatusCmd(
             for (file in status.unstaged) {
                 echo("        modified:   $file")
             }
-            echo("")
+            if (status.untracked.isNotEmpty() && status.staged.isEmpty()) {
+                echo("")
+            }
         }
 
         // Untracked files

@@ -31,25 +31,25 @@ class CommitCmd(
         val repo = repoProvider()
         require(Files.isDirectory(repo.meta)) { "Not a TimeTree repository (no .timetree directory)" }
 
-        // 1) Load staged entries
+        // Load staged entries
         val staged = Index.load(repo)
         if (staged.isEmpty() && !allowEmpty) {
             echo("Nothing to commit. Use --allow-empty to create an empty commit.", err = true)
             throw ProgramResult(1)
         }
 
-        // 2) Build TREE recursively from index
+        // Build tree recursively from the index
         val treeId =
             TreeBuilder.build(
                 entries = staged,
                 writeTree = { bytes -> FsObjectStore.writeTree(repo, bytes) },
             )
 
-        // 3) Resolve HEAD / parent
+        // Resolve HEAD / parent
         val head = Refs.readHead(repo)
         val parent = head.id
 
-        // 3.5) Check if a tree has changed from the parent commit
+        // Check if a tree has changed from the parent commit
         if (parent != null && !allowEmpty) {
             val parentTreeId = readTreeIdFromCommit(repo, parent)
             if (parentTreeId == treeId) {
@@ -62,7 +62,7 @@ class CommitCmd(
             }
         }
 
-        // 4) Write COMMIT
+        // Write commit object
         val commitId =
             CommitWriter.write(
                 tree = treeId,
@@ -72,7 +72,7 @@ class CommitCmd(
                 persist = { bytes -> FsObjectStore.writeCommit(repo, bytes) },
             )
 
-        // 5) Update ref
+        // Update ref
         val branchRef = head.refPath ?: "refs/heads/master"
         Refs.ensureHeadOn(repo, branchRef) // in case HEAD was missing/detached on new repo
         Refs.updateRef(repo, branchRef, commitId.toHex())

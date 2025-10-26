@@ -80,7 +80,7 @@ class Sha1 : Sha1Like {
         writeIntBE(h3, out, 12)
         writeIntBE(h4, out, 16)
 
-        // Reset to prevent re-use bugs
+        // Reset to prevent hashing the final state
         reset()
 
         return ObjectId.from(out)

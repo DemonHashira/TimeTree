@@ -12,5 +12,6 @@ object CommandRouter {
                 HashObjectCmd(),
                 CommitCmd(),
                 StatusCmd(),
+                LogCmd(),
             )
 }

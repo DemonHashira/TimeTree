@@ -96,20 +96,22 @@ class AddCmd(
         val updated = mutableListOf<String>()
         val unchanged = mutableListOf<String>()
 
-        // Now process all collected files
+        // Process all collected files
         for (abs in filesToAdd) {
             if (!abs.startsWith(root)) {
                 echo("warning: '$abs' is outside repository")
                 continue
             }
+
+            // Skip .timetree internals
             if (abs.startsWith(meta)) {
-                continue // silently skip .timetree internals
+                continue
             }
 
             val rel = root.relativize(abs).toString().replace(File.separatorChar, '/')
             val id = FsObjectStore.writeBlob(repo, abs)
 
-            // Check if file is already staged with the same content
+            // Check if a file is already staged with the same content
             val existingId = currentIndex[rel]
             when {
                 existingId == null -> {
@@ -133,9 +135,11 @@ class AddCmd(
         if (added.isNotEmpty()) {
             added.sorted().forEach { echo("add '$it'") }
         }
+
         if (updated.isNotEmpty()) {
             updated.sorted().forEach { echo("update '$it'") }
         }
+
         if (unchanged.isNotEmpty() && (added.isEmpty() && updated.isEmpty())) {
             // Only show unchanged if nothing was actually staged
             echo("All ${unchanged.size} file(s) already staged and up-to-date")

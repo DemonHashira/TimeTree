@@ -23,7 +23,7 @@ class AtomicFile(
 
     /**
      * Atomically writes raw bytes to the target file.
-     * Uses write-then-move strategy: writes to temporary file first,
+     * Uses write-then-move strategy: writes to a temporary file first,
      * then atomically moves it to replace the target.
      * @param bytes The byte array to write
      */
