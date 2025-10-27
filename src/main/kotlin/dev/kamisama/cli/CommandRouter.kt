@@ -13,5 +13,7 @@ object CommandRouter {
                 CommitCmd(),
                 StatusCmd(),
                 LogCmd(),
+                BranchCmd(),
+                CheckoutCmd(),
             )
 }
