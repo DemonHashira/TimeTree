@@ -15,5 +15,6 @@ object CommandRouter {
                 LogCmd(),
                 BranchCmd(),
                 CheckoutCmd(),
+                DiffCmd(),
             )
 }

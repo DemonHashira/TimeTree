@@ -68,7 +68,7 @@ class BranchCmd(
             throw ProgramResult(1)
         }
 
-        // Check if branch already exists
+        // Check if a branch already exists
         if (Refs.branchExists(repo, name)) {
             echo("error: branch '$name' already exists", err = true)
             throw ProgramResult(1)
