@@ -117,8 +117,6 @@ object Myers {
 
         var d = dFinal
         var k = kFinal
-        var x = trace[d][k]!!.x
-        var y = trace[d][k]!!.y
 
         while (d >= 0) {
             val step = trace[d][k]!!
@@ -154,8 +152,6 @@ object Myers {
 
             d--
             k = prevK
-            x = prevX
-            y = prevY
         }
 
         return editsReversed.asReversed()
