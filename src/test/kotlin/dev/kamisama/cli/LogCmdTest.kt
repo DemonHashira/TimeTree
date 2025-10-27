@@ -124,10 +124,11 @@ class LogCmdTest :
 
             // Extract commit ID from output
             val commitLine = result.stdout.lines().first { it.startsWith("commit ") }
-            val commitId = commitLine.removePrefix("commit ").trim()
+            val afterCommit = commitLine.removePrefix("commit ").trim()
+            val commitId = afterCommit.split(" ", "(")[0].trim()
 
-            // Verify it's abbreviated (12 chars)
             commitId.length shouldBe 40
+            commitId.all { it in '0'..'9' || it in 'a'..'f' } shouldBe true
         }
 
         "log with -n flag should limit number of commits shown" {
@@ -308,5 +309,85 @@ class LogCmdTest :
             // Count commit entries
             val commitCount = result.stdout.lines().count { it.startsWith("commit ") }
             commitCount shouldBe 10
+        }
+
+        "log should show branch references for commits" {
+            val tmp = tempdir().toPath()
+            val repo = RepoLayout(tmp)
+            ensureInitialized(repo, "master")
+
+            // Create an initial commit
+            val file1 = tmp.resolve("file1.txt")
+            Files.writeString(file1, "content1")
+            val blob1 = FsObjectStore.writeBlob(repo, file1)
+            Index.update(repo, "file1.txt", blob1)
+            CommitCmd { repo }.test(arrayOf("-m", "First commit"))
+
+            // Create a branch pointing to the same commit
+            BranchCmd { repo }.test(arrayOf("feature"))
+
+            val cmd = LogCmd { repo }
+            val result = cmd.test(emptyArray())
+
+            result.statusCode shouldBe 0
+
+            // Should show HEAD -> master and feature branch
+            result.stdout shouldContain "(HEAD -> master, feature)"
+        }
+
+        "log should show HEAD -> branch for current branch" {
+            val tmp = tempdir().toPath()
+            val repo = RepoLayout(tmp)
+            ensureInitialized(repo, "master")
+
+            // Create commit
+            val file = tmp.resolve("test.txt")
+            Files.writeString(file, "content")
+            val blob = FsObjectStore.writeBlob(repo, file)
+            Index.update(repo, "test.txt", blob)
+            CommitCmd { repo }.test(arrayOf("-m", "Test commit"))
+
+            val cmd = LogCmd { repo }
+            val result = cmd.test(emptyArray())
+
+            result.statusCode shouldBe 0
+
+            // Should show HEAD -> master
+            result.stdout shouldContain "HEAD -> master"
+        }
+
+        "log should show branches after checkout" {
+            val tmp = tempdir().toPath()
+            val repo = RepoLayout(tmp)
+            ensureInitialized(repo, "master")
+
+            // Create an initial commit
+            val file1 = tmp.resolve("file1.txt")
+            Files.writeString(file1, "content1")
+            val blob1 = FsObjectStore.writeBlob(repo, file1)
+            Index.update(repo, "file1.txt", blob1)
+            CommitCmd { repo }.test(arrayOf("-m", "First commit"))
+
+            // Create and checkout feature branch
+            CheckoutCmd { repo }.test(arrayOf("-b", "feature"))
+
+            // Commit on feature
+            val file2 = tmp.resolve("file2.txt")
+            Files.writeString(file2, "content2")
+            val blob2 = FsObjectStore.writeBlob(repo, file2)
+            Index.update(repo, "file2.txt", blob2)
+            CommitCmd { repo }.test(arrayOf("-m", "Feature commit"))
+
+            val cmd = LogCmd { repo }
+            val result = cmd.test(emptyArray())
+
+            result.statusCode shouldBe 0
+
+            // The latest commit should show the HEAD-> feature
+            val firstCommitLine = result.stdout.lines().first { it.startsWith("commit ") }
+            firstCommitLine shouldContain "HEAD -> feature"
+
+            // First commit should show master branch
+            result.stdout shouldContain "(master)"
         }
     })

@@ -6,6 +6,7 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import dev.kamisama.core.fs.RepoLayout
 import dev.kamisama.core.log.Log
+import dev.kamisama.core.refs.Refs
 import java.nio.file.Files
 
 class LogCmd(
@@ -28,9 +29,30 @@ class LogCmd(
             return
         }
 
+        // Get all branches and HEAD for the reference display
+        val branches = Refs.listBranches(repo)
+        val head = Refs.readHead(repo)
+        val currentBranch = head.currentBranch()
+
+        // Create a map of a commit ID -> list of branch names
+        val commitToBranches = mutableMapOf<String, MutableList<String>>()
+        for ((branchName, commitId) in branches) {
+            val commitHex = commitId.toHex()
+            commitToBranches.computeIfAbsent(commitHex) { mutableListOf() }.add(branchName)
+        }
+
         // Display commits in reverse chronological order
         for ((index, commit) in commits.withIndex()) {
-            echo("commit ${commit.abbreviatedId()}")
+            // Build reference string (e.g., "(HEAD -> master, feature)")
+            val refs = buildReferenceString(commit.id.toHex(), commitToBranches, head, currentBranch)
+
+            // Display commit with references
+            if (refs.isNotEmpty()) {
+                echo("commit ${commit.abbreviatedId()} $refs")
+            } else {
+                echo("commit ${commit.abbreviatedId()}")
+            }
+
             echo("Author: ${commit.author} <${commit.authorEmail}>")
             echo("Date:   ${commit.formattedTimestamp()}")
             echo("")
@@ -39,6 +61,51 @@ class LogCmd(
             if (index < commits.size - 1) {
                 echo("")
             }
+        }
+    }
+
+    /**
+     * Build a reference string like "(HEAD -> master, feature)"
+     */
+    private fun buildReferenceString(
+        commitHex: String,
+        commitToBranches: Map<String, List<String>>,
+        head: Refs.Head,
+        currentBranch: String?,
+    ): String {
+        val refParts = mutableListOf<String>()
+
+        // Get branches pointing to this commit
+        val branchesAtCommit = commitToBranches[commitHex] ?: emptyList()
+
+        // Check if HEAD points to this commit
+        if (head.id?.toHex() == commitHex) {
+            if (currentBranch != null && currentBranch in branchesAtCommit) {
+                // HEAD points to a branch which points to this commit
+                refParts.add("HEAD -> $currentBranch")
+                // Add other branches (excluding the current one)
+                branchesAtCommit.filter { it != currentBranch }.sorted().forEach {
+                    refParts.add(it)
+                }
+            } else {
+                // Detached HEAD
+                refParts.add("HEAD")
+                // Add all branches
+                branchesAtCommit.sorted().forEach {
+                    refParts.add(it)
+                }
+            }
+        } else {
+            // HEAD doesn't point here, just show branches
+            branchesAtCommit.sorted().forEach {
+                refParts.add(it)
+            }
+        }
+
+        return if (refParts.isNotEmpty()) {
+            "(${refParts.joinToString(", ")})"
+        } else {
+            ""
         }
     }
 }
