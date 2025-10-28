@@ -50,6 +50,12 @@ object Diff {
         if (oldBinary || newBinary) {
             return buildString {
                 append("diff --timetree a/$path b/$path\n")
+
+                // Add the index line with abbreviated blob IDs (like git)
+                val oldHash = oldBlobId?.toHex()?.take(7) ?: "0000000"
+                val newHash = newBlobId?.toHex()?.take(7) ?: "0000000"
+                append("index $oldHash..$newHash 100644\n")
+
                 when {
                     oldBlobId == null -> append("new file\n")
                     newBlobId == null -> append("deleted file\n")
@@ -74,6 +80,12 @@ object Diff {
 
         return buildString {
             append("diff --timetree a/$path b/$path\n")
+
+            // Add the index line with abbreviated blob IDs (like git)
+            val oldHash = oldBlobId?.toHex()?.take(7) ?: "0000000"
+            val newHash = newBlobId?.toHex()?.take(7) ?: "0000000"
+            append("index $oldHash..$newHash 100644\n")
+
             when {
                 oldBlobId == null && newBlobId != null -> append("new file\n")
                 oldBlobId != null && newBlobId == null -> append("deleted file\n")
