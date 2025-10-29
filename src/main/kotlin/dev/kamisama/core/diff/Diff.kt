@@ -49,17 +49,7 @@ object Diff {
 
         if (oldBinary || newBinary) {
             return buildString {
-                append("diff --timetree a/$path b/$path\n")
-
-                // Add the index line with abbreviated blob IDs (like git)
-                val oldHash = oldBlobId?.toHex()?.take(7) ?: "0000000"
-                val newHash = newBlobId?.toHex()?.take(7) ?: "0000000"
-                append("index $oldHash..$newHash 100644\n")
-
-                when {
-                    oldBlobId == null -> append("new file\n")
-                    newBlobId == null -> append("deleted file\n")
-                }
+                append(buildDiffHeader(path, oldBlobId, newBlobId))
                 append("Binary files differ\n")
             }
         }
@@ -79,6 +69,20 @@ object Diff {
             )
 
         return buildString {
+            append(buildDiffHeader(path, oldBlobId, newBlobId))
+            append(diff)
+        }
+    }
+
+    /**
+     * Build a diff header for a file change.
+     */
+    private fun buildDiffHeader(
+        path: String,
+        oldBlobId: ObjectId?,
+        newBlobId: ObjectId?,
+    ): String =
+        buildString {
             append("diff --timetree a/$path b/$path\n")
 
             // Add the index line with abbreviated blob IDs (like git)
@@ -90,9 +94,7 @@ object Diff {
                 oldBlobId == null && newBlobId != null -> append("new file\n")
                 oldBlobId != null && newBlobId == null -> append("deleted file\n")
             }
-            append(diff)
         }
-    }
 
     /**
      * Compare two trees and return a list of file changes.
