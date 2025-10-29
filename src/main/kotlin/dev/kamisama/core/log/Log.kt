@@ -63,7 +63,12 @@ object Log {
     fun getHistory(
         repo: RepoLayout,
         maxCount: Int? = null,
+        all: Boolean = false,
     ): List<CommitEntry> {
+        if (all) {
+            return getAllHistory(repo, maxCount)
+        }
+
         val head = Refs.readHead(repo)
         val startCommitId = head.id ?: return emptyList()
 
@@ -87,6 +92,44 @@ object Log {
         }
 
         return commits
+    }
+
+    /**
+     * Retrieves all commits from all branches in the repository.
+     */
+    private fun getAllHistory(
+        repo: RepoLayout,
+        maxCount: Int? = null,
+    ): List<CommitEntry> {
+        val branches = Refs.listBranches(repo)
+        val visited = mutableSetOf<ObjectId>()
+        val commits = mutableListOf<CommitEntry>()
+
+        // Start from all branch tips
+        for ((_, commitId) in branches) {
+            var currentId: ObjectId? = commitId
+
+            while (currentId != null && currentId !in visited) {
+                visited.add(currentId)
+
+                // Read and parse the commit
+                val commit = readCommit(repo, currentId) ?: break
+                commits.add(commit)
+
+                // Move to parent commit
+                currentId = commit.parent
+            }
+        }
+
+        // Sort commits by timestamp (most recent first)
+        val sortedCommits = commits.sortedByDescending { it.timestamp }
+
+        // Apply max count limit if specified
+        return if (maxCount != null && maxCount > 0) {
+            sortedCommits.take(maxCount)
+        } else {
+            sortedCommits
+        }
     }
 
     /**

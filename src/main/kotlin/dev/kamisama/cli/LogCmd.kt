@@ -3,6 +3,7 @@ package dev.kamisama.cli
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.parameters.options.default
+import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import dev.kamisama.core.fs.RepoLayout
 import dev.kamisama.core.log.Log
@@ -14,6 +15,8 @@ class LogCmd(
 ) : CliktCommand(name = "log") {
     private val maxCount by option("-n", "--max-count", help = "Limit the number of commits to show")
         .default("0")
+    private val all by option("--all", help = "Show all commits from all branches")
+        .flag(default = false)
 
     override fun help(context: Context) = "Show commit history"
 
@@ -22,7 +25,7 @@ class LogCmd(
         require(Files.isDirectory(repo.meta)) { "Not a TimeTree repository (no .timetree directory)" }
 
         val limit = maxCount.toIntOrNull()?.takeIf { it > 0 }
-        val commits = Log.getHistory(repo, limit)
+        val commits = Log.getHistory(repo, limit, all)
 
         if (commits.isEmpty()) {
             echo("No commits yet in the repository")
