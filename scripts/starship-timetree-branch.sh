@@ -12,6 +12,12 @@
 #     when = "timetree-current-branch.sh"
 #     format = "on [ $output]($style) "
 #     style = "bold purple"
+#
+#      [directory]
+#      truncation_length = 1
+#
+#      truncate_to_repo = false
+#      truncation_symbol = ""
 
 # Walk up from $PWD to find the repo root (directory that directly contains .timetree)
 find_timetree_root() {

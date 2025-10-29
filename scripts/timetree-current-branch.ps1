@@ -9,6 +9,12 @@
         format = "on [ $output]($style) "
         style = "bold purple"
 
+        [directory]
+        truncation_length = 1
+
+        truncate_to_repo = false
+        truncation_symbol = ""
+
     Notes:
       - Make sure this script's directory is in $env:PATH.
       - You also need to allow local scripts to execute:
