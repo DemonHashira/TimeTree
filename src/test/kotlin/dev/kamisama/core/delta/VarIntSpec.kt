@@ -41,7 +41,7 @@ class VarIntSpec :
             it("small values are compact") {
                 val out = ByteArrayOutputStream()
                 VarInt.write(out, 100L)
-                out.size() shouldBe 1 // Values < 128 should be 1 byte
+                out.size() shouldBe 1
             }
 
             it("values 128-16383 use 2 bytes") {

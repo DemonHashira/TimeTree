@@ -23,7 +23,7 @@ object DeltaIO {
         out: OutputStream,
     ) {
         out.write(MAGIC)
-        writeU32(out, delta.blockSize)
+        BinaryIO.writeU32(out, delta.blockSize)
         VarInt.write(out, delta.ops.size.toLong())
 
         for (op in delta.ops) {
@@ -47,12 +47,12 @@ object DeltaIO {
      * Read a delta from an input stream.
      */
     fun read(input: InputStream): Delta {
-        val magic = readBytes(input, 5)
+        val magic = BinaryIO.readBytes(input, 5)
         if (!magic.contentEquals(MAGIC)) {
             throw IllegalArgumentException("Invalid delta magic (expected TTDL v1)")
         }
 
-        val blockSize = readU32(input)
+        val blockSize = BinaryIO.readU32(input)
         val opsCount = VarInt.read(input)
 
         if (opsCount !in 0..MAX_OPS) {
@@ -72,7 +72,7 @@ object DeltaIO {
                     if (len !in 0..MAX_INSERT_LENGTH) {
                         throw IllegalArgumentException("Insert length out of bounds: $len (max $MAX_INSERT_LENGTH)")
                     }
-                    val data = readBytes(input, len.toInt())
+                    val data = BinaryIO.readBytes(input, len.toInt())
                     ops.add(DeltaOp.Insert(data))
                 }
 
@@ -93,42 +93,5 @@ object DeltaIO {
         }
 
         return Delta(blockSize, ops)
-    }
-
-    private fun writeU32(
-        out: OutputStream,
-        value: Int,
-    ) {
-        out.write((value ushr 24) and 0xFF)
-        out.write((value ushr 16) and 0xFF)
-        out.write((value ushr 8) and 0xFF)
-        out.write(value and 0xFF)
-    }
-
-    private fun readU32(input: InputStream): Int {
-        val b0 = input.read()
-        val b1 = input.read()
-        val b2 = input.read()
-        val b3 = input.read()
-        if (b0 < 0 || b1 < 0 || b2 < 0 || b3 < 0) {
-            throw EOFException("Unexpected EOF while reading u32")
-        }
-        return (b0 shl 24) or (b1 shl 16) or (b2 shl 8) or b3
-    }
-
-    private fun readBytes(
-        input: InputStream,
-        count: Int,
-    ): ByteArray {
-        val result = ByteArray(count)
-        var offset = 0
-        while (offset < count) {
-            val n = input.read(result, offset, count - offset)
-            if (n < 0) {
-                throw EOFException("Unexpected EOF while reading $count bytes")
-            }
-            offset += n
-        }
-        return result
     }
 }
