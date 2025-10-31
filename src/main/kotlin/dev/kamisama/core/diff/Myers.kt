@@ -53,20 +53,14 @@ object Myers {
 
         for (d in 0..maxD) {
             val stepsForD = mutableMapOf<Int, Step>()
-
             val newV = mutableMapOf<Int, Int>()
+
             for (k in -d..d step 2) {
                 // Choose whether to move down (insert) or right (delete)
-                val fromDown =
-                    (k == -d) || (k != d && (v[k - 1] ?: 0) < (v[k + 1] ?: 0))
+                val fromDown = (k == -d) || (k != d && (v[k - 1] ?: 0) < (v[k + 1] ?: 0))
 
                 val prevK = if (fromDown) k + 1 else k - 1
-                val startX =
-                    if (fromDown) {
-                        v[k + 1] ?: 0
-                    } else {
-                        (v[k - 1] ?: 0) + 1
-                    }
+                val startX = if (fromDown) (v[k + 1] ?: 0) else (v[k - 1] ?: 0) + 1
                 val startY = startX - k
 
                 // Extend along matching lines
@@ -120,9 +114,7 @@ object Myers {
 
         while (d >= 0) {
             val step = trace[d][k]!!
-            val prevK = step.prevK
-            val prevX = step.prevX
-            val prevY = step.prevY
+            val (prevK, prevX, prevY) = Triple(step.prevK, step.prevX, step.prevY)
 
             // Add matching lines from the snake
             var curX = step.x
@@ -140,12 +132,14 @@ object Myers {
                 if (prevX <= 0) {
                     error("Backtrack inconsistency: expected Delete but prevX=$prevX")
                 }
+                // Came from the right -> the paid step was Delete
                 val deletedLine = a[prevX - 1]
                 editsReversed += Edit.Delete(deletedLine)
             } else {
                 if (prevY <= 0) {
                     error("Backtrack inconsistency: expected Insert but prevY=$prevY")
                 }
+                // Came from the down -> the paid step was Insert
                 val insertedLine = b[prevY - 1]
                 editsReversed += Edit.Insert(insertedLine)
             }

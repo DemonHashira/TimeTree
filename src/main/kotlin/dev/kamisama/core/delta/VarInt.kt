@@ -9,7 +9,7 @@ import java.io.OutputStream
  */
 object VarInt {
     /**
-     * Write a long value as a base-128 variant.
+     * Write a long value as a base-128 varint.
      */
     fun write(
         out: OutputStream,
@@ -24,7 +24,7 @@ object VarInt {
     }
 
     /**
-     * Read a base-128 variant from the input stream.
+     * Read a base-128 varint from the input stream.
      */
     fun read(input: InputStream): Long {
         var result = 0L
