@@ -6,6 +6,7 @@ import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
 import dev.kamisama.core.fs.RepoLayout
 import dev.kamisama.core.index.Index
+import dev.kamisama.core.objects.DeltaStore
 import dev.kamisama.core.objects.FsObjectStore
 import java.io.File
 import java.nio.file.Files
@@ -95,6 +96,7 @@ class AddCmd(
         val added = mutableListOf<String>()
         val updated = mutableListOf<String>()
         val unchanged = mutableListOf<String>()
+        var deltasUsed = 0
 
         // Process all collected files
         for (abs in filesToAdd) {
@@ -109,21 +111,34 @@ class AddCmd(
             }
 
             val rel = root.relativize(abs).toString().replace(File.separatorChar, '/')
-            val id = FsObjectStore.writeBlob(repo, abs)
+
+            // Check if we have a previous version of this file to delta against
+            val existingId = currentIndex[rel]
+            val (id, usedDelta) =
+                if (existingId != null && Files.size(abs) >= 64 * 1024) {
+                    // Try delta compression for files >= 64KB with an existing version
+                    DeltaStore.storeBlobWithDelta(repo, abs, existingId)
+                } else {
+                    // Small file or no previous version: store as full blob
+                    Pair(FsObjectStore.writeBlob(repo, abs), false)
+                }
+
+            if (usedDelta) deltasUsed++
 
             // Check if a file is already staged with the same content
-            val existingId = currentIndex[rel]
             when {
                 existingId == null -> {
                     // New file - not previously in index
                     Index.update(repo, rel, id)
                     added.add(rel)
                 }
+
                 existingId != id -> {
                     // File exists in index but content changed
                     Index.update(repo, rel, id)
                     updated.add(rel)
                 }
+
                 else -> {
                     // File already staged with identical content
                     unchanged.add(rel)
@@ -151,6 +166,9 @@ class AddCmd(
             echo("Nothing specified, nothing added.")
         } else if (totalChanged > 0) {
             echo("Staged $totalChanged file(s) for commit")
+            if (deltasUsed > 0) {
+                echo("  ($deltasUsed stored as delta)")
+            }
         }
     }
 }

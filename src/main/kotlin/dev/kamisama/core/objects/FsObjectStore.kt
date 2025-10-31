@@ -113,7 +113,7 @@ object FsObjectStore {
      * Converts object ID to sharded path structure.
      * Returns (objects/<hh>, "<rest>") where hh is the first 2 hex chars.
      */
-    private fun dirAndLeaf(
+    fun dirAndLeaf(
         repo: RepoLayout,
         id: ObjectId,
     ): Pair<Path, String> {

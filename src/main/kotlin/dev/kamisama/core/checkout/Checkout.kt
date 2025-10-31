@@ -3,6 +3,7 @@ package dev.kamisama.core.checkout
 import dev.kamisama.core.fs.RepoLayout
 import dev.kamisama.core.hash.ObjectId
 import dev.kamisama.core.index.Index
+import dev.kamisama.core.objects.DeltaStore
 import dev.kamisama.core.refs.Refs
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -78,13 +79,10 @@ object Checkout {
         val root = repo.root.toAbsolutePath().normalize()
         for ((path, blobId) in treeEntries) {
             val filePath = root.resolve(path)
-
-            // Create parent directories if needed
             Files.createDirectories(filePath.parent)
-
-            // Read blob content and write to file
-            val blobContent = readBlob(repo, blobId)
-            Files.write(filePath, blobContent)
+            Files.newOutputStream(filePath).use { out ->
+                DeltaStore.streamBlobContent(repo, blobId, out)
+            }
         }
 
         // Update the index to match the tree
@@ -102,11 +100,9 @@ object Checkout {
         val commitPath = repo.objects.resolve(hex.take(2)).resolve(hex.substring(2))
         val commitBody = Files.readString(commitPath, StandardCharsets.UTF_8)
         val treeHex =
-            Regex("""(?m)^tree ([0-9a-f]{40})$""")
-                .find(commitBody)
-                ?.groupValues
-                ?.get(1)
-                ?: throw IllegalStateException("Commit ${commitId.toHex()} missing 'tree' header")
+            Regex("""(?m)^tree ([0-9a-f]{40})$""").find(commitBody)?.groupValues?.get(1) ?: throw IllegalStateException(
+                "Commit ${commitId.toHex()} missing 'tree' header",
+            )
         return ObjectId.fromHex(treeHex)
     }
 
@@ -157,18 +153,6 @@ object Checkout {
     }
 
     /**
-     * Read blob content from the object store.
-     */
-    private fun readBlob(
-        repo: RepoLayout,
-        blobId: ObjectId,
-    ): ByteArray {
-        val hex = blobId.toHex()
-        val blobPath = repo.objects.resolve(hex.take(2)).resolve(hex.substring(2))
-        return Files.readAllBytes(blobPath)
-    }
-
-    /**
      * Clear the working tree (except .timetree directory).
      */
     private fun clearWorkingTree(repo: RepoLayout) {
@@ -176,10 +160,7 @@ object Checkout {
         val meta = repo.meta.toAbsolutePath().normalize()
 
         Files.walk(root).use { stream ->
-            stream
-                .filter { Files.isRegularFile(it) }
-                .filter { !it.startsWith(meta) }
-                .forEach { Files.delete(it) }
+            stream.filter { Files.isRegularFile(it) }.filter { !it.startsWith(meta) }.forEach { Files.delete(it) }
         }
 
         // Remove empty directories
