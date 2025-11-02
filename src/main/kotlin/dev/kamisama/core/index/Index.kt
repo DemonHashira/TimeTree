@@ -16,7 +16,7 @@ import java.util.Collections
 object Index {
     private const val FILE_NAME = "index"
 
-    /** Public read-only view for callers (CLI, services). */
+    /** Public read-only view for callers (CLI, core logic). */
     fun load(repo: RepoLayout): Map<String, ObjectId> = Collections.unmodifiableMap(loadMutable(repo))
 
     /** Internal mutable loader for update workflows. */
@@ -31,7 +31,7 @@ object Index {
             require(sp in 1 until line.length - 1) { "Corrupt index line: $line" }
             val hex = line.take(sp)
             require(hex.length == 40) { "Bad object id length in index: $hex" }
-            val filePath = line.substring(sp + 1) // relative path (may include spaces)
+            val filePath = line.substring(sp + 1)
             out[filePath] = ObjectId.fromHex(hex)
         }
         return out
