@@ -45,22 +45,24 @@ object Myers {
         val maxD = n + m
 
         // Track furthest x-coordinate reached on each diagonal
-        var v = mutableMapOf<Int, Int>()
-        v[1] = 0
+        val offset = maxD + 1
+        val vSize = 2 * maxD + 3
+        var v = IntArray(vSize)
+        var newV = IntArray(vSize)
+        v[offset + 1] = 0
 
         // Store step information for each d-iteration
         val trace = mutableListOf<MutableMap<Int, Step>>()
 
         for (d in 0..maxD) {
             val stepsForD = mutableMapOf<Int, Step>()
-            val newV = mutableMapOf<Int, Int>()
 
             for (k in -d..d step 2) {
                 // Choose whether to move down (insert) or right (delete)
-                val fromDown = (k == -d) || (k != d && (v[k - 1] ?: 0) < (v[k + 1] ?: 0))
+                val fromDown = (k == -d) || (k != d && v[offset + k - 1] < v[offset + k + 1])
 
                 val prevK = if (fromDown) k + 1 else k - 1
-                val startX = if (fromDown) (v[k + 1] ?: 0) else (v[k - 1] ?: 0) + 1
+                val startX = if (fromDown) v[offset + k + 1] else v[offset + k - 1] + 1
                 val startY = startX - k
 
                 // Extend along matching lines
@@ -71,7 +73,7 @@ object Myers {
                     y++
                 }
 
-                newV[k] = x
+                newV[offset + k] = x
 
                 stepsForD[k] =
                     Step(
@@ -91,7 +93,9 @@ object Myers {
             }
 
             trace.add(stepsForD)
+            val temp = v
             v = newV
+            newV = temp
         }
 
         return emptyList()
@@ -241,16 +245,13 @@ object Myers {
                         hunkACount++
                         aLine++
                     }
+
                     is Edit.Insert -> {
                         hunkBCount++
                         bLine++
                     }
-                    is Edit.Keep -> {
-                        hunkACount++
-                        hunkBCount++
-                        aLine++
-                        bLine++
-                    }
+
+                    is Edit.Keep -> error("Unreachable: Keep should not occur in isChange branch")
                 }
                 contextCount = 0
             } else {
