@@ -5,7 +5,7 @@ import com.github.ajalt.clikt.core.Context
 
 /**
  * Main CLI command class for the TimeTree version control system.
- * This serves as the root command that coordinates subcommands like init, add, etc.
+ * This serves as the root command that coordinates subcommands like init, add, commit etc.
  */
 class TimeTreeCli : CliktCommand(name = "timetree") {
     // Provide help text displayed when the user runs 'timetree --help'
