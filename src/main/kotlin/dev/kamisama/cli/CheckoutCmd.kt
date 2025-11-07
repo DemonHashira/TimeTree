@@ -10,7 +10,6 @@ import dev.kamisama.core.checkout.Checkout
 import dev.kamisama.core.fs.RepoLayout
 import dev.kamisama.core.hash.ObjectId
 import dev.kamisama.core.refs.Refs
-import java.nio.file.Files
 
 class CheckoutCmd(
     private val repoProvider: () -> RepoLayout = RepoLayout::fromWorkingDir,
@@ -22,7 +21,7 @@ class CheckoutCmd(
 
     override fun run() {
         val repo = repoProvider()
-        require(Files.isDirectory(repo.meta)) { "Not a TimeTree repository (no .timetree directory)" }
+        CliUtils.requireRepository(repo)
 
         if (createBranch) {
             createAndCheckoutBranch(repo, target)
@@ -104,7 +103,7 @@ class CheckoutCmd(
         branchName: String,
     ) {
         // Validate branch name
-        if (branchName.contains('/') || branchName.contains(' ') || branchName.isEmpty()) {
+        if (!CliUtils.isValidBranchName(branchName)) {
             echo("error: invalid branch name '$branchName'", err = true)
             throw ProgramResult(1)
         }

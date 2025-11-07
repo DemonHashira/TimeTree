@@ -8,7 +8,6 @@ import com.github.ajalt.clikt.parameters.options.option
 import dev.kamisama.core.fs.RepoLayout
 import dev.kamisama.core.log.Log
 import dev.kamisama.core.refs.Refs
-import java.nio.file.Files
 
 class LogCmd(
     private val repoProvider: () -> RepoLayout = RepoLayout::fromWorkingDir,
@@ -22,7 +21,7 @@ class LogCmd(
 
     override fun run() {
         val repo = repoProvider()
-        require(Files.isDirectory(repo.meta)) { "Not a TimeTree repository (no .timetree directory)" }
+        CliUtils.requireRepository(repo)
 
         val limit = maxCount.toIntOrNull()?.takeIf { it > 0 }
         val commits = Log.getHistory(repo, limit, all)

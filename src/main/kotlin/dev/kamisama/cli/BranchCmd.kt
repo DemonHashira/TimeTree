@@ -9,7 +9,6 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import dev.kamisama.core.fs.RepoLayout
 import dev.kamisama.core.refs.Refs
-import java.nio.file.Files
 
 class BranchCmd(
     private val repoProvider: () -> RepoLayout = RepoLayout::fromWorkingDir,
@@ -22,7 +21,7 @@ class BranchCmd(
 
     override fun run() {
         val repo = repoProvider()
-        require(Files.isDirectory(repo.meta)) { "Not a TimeTree repository (no .timetree directory)" }
+        CliUtils.requireRepository(repo)
 
         when {
             // Delete branch
@@ -63,7 +62,7 @@ class BranchCmd(
         name: String,
     ) {
         // Validate branch name
-        if (name.contains('/') || name.contains(' ') || name.isEmpty()) {
+        if (!CliUtils.isValidBranchName(name)) {
             echo("error: invalid branch name '$name'", err = true)
             throw ProgramResult(1)
         }

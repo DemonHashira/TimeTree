@@ -41,7 +41,7 @@ class DiffCmd(
 
     override fun run() {
         val repo = repoProvider()
-        require(Files.isDirectory(repo.meta)) { "Not a TimeTree repository (no .timetree directory)" }
+        CliUtils.requireRepository(repo)
 
         val context = contextLines.toIntOrNull() ?: 3
         if (context < 0) {

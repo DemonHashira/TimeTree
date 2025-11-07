@@ -4,7 +4,6 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
 import dev.kamisama.core.fs.RepoLayout
 import dev.kamisama.core.status.Status
-import java.nio.file.Files
 
 class StatusCmd(
     private val repoProvider: () -> RepoLayout = RepoLayout::fromWorkingDir,
@@ -13,7 +12,7 @@ class StatusCmd(
 
     override fun run() {
         val repo = repoProvider()
-        require(Files.isDirectory(repo.meta)) { "Not a TimeTree repository (no .timetree directory)" }
+        CliUtils.requireRepository(repo)
 
         val status = Status.compute(repo)
 

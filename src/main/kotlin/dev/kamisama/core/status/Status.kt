@@ -1,12 +1,12 @@
 package dev.kamisama.core.status
 
+import dev.kamisama.core.diff.Diff
 import dev.kamisama.core.fs.RepoLayout
 import dev.kamisama.core.hash.ObjectId
 import dev.kamisama.core.index.Index
 import dev.kamisama.core.objects.FsObjectStore
 import dev.kamisama.core.refs.Refs
 import java.io.File
-import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import kotlin.io.path.isRegularFile
 import kotlin.streams.asSequence
@@ -101,77 +101,10 @@ object Status {
         val commitId = head.id ?: return emptyMap()
 
         // Read the commit object to get tree id
-        val treeId = readTreeIdFromCommit(repo, commitId)
+        val treeId = Diff.readCommitTree(repo, commitId) ?: return emptyMap()
 
         // Read and parse the tree recursively
-        return readTreeRecursively(repo, treeId, "")
-    }
-
-    /**
-     * Reads the tree ID from a commit object.
-     */
-    private fun readTreeIdFromCommit(
-        repo: RepoLayout,
-        commitId: ObjectId,
-    ): ObjectId {
-        val hex = commitId.toHex()
-        val commitPath = repo.objects.resolve(hex.take(2)).resolve(hex.substring(2))
-        val commitBody = Files.readString(commitPath, StandardCharsets.UTF_8)
-        val treeHex =
-            Regex("""(?m)^tree ([0-9a-f]{40})$""")
-                .find(commitBody)
-                ?.groupValues
-                ?.get(1)
-                ?: error("Commit ${commitId.toHex()} missing 'tree' header")
-        return ObjectId.fromHex(treeHex)
-    }
-
-    /**
-     * Recursively reads a tree object and returns all file paths with their object IDs.
-     *
-     * @param prefix The current directory path prefix (used for recursion)
-     */
-    private fun readTreeRecursively(
-        repo: RepoLayout,
-        treeId: ObjectId,
-        prefix: String,
-    ): Map<String, ObjectId> {
-        val result = mutableMapOf<String, ObjectId>()
-        val hex = treeId.toHex()
-        val treePath = repo.objects.resolve(hex.take(2)).resolve(hex.substring(2))
-
-        if (!Files.exists(treePath)) {
-            return emptyMap()
-        }
-
-        val treeContent = Files.readString(treePath, StandardCharsets.UTF_8)
-        val lines = treeContent.lines().filter { it.isNotBlank() }
-
-        for (line in lines) {
-            // Format: "<mode> <name>\t<hex-id>"
-            val parts = line.split('\t')
-            if (parts.size != 2) continue
-
-            val (modeAndName, hexId) = parts
-            val spaceIdx = modeAndName.indexOf(' ')
-            if (spaceIdx == -1) continue
-
-            val mode = modeAndName.substring(0, spaceIdx)
-            val name = modeAndName.substring(spaceIdx + 1)
-            val id = ObjectId.fromHex(hexId)
-
-            val fullPath = if (prefix.isEmpty()) name else "$prefix/$name"
-
-            if (mode == "040000") {
-                // Directory - recurse
-                result.putAll(readTreeRecursively(repo, id, fullPath))
-            } else {
-                // File
-                result[fullPath] = id
-            }
-        }
-
-        return result
+        return Diff.parseTree(repo, treeId, "")
     }
 
     /**
