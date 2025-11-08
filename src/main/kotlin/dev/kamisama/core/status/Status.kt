@@ -38,7 +38,7 @@ object Status {
      * Performance: Uses lazy evaluation - only hashes tracked files, not all files in the working tree.
      */
     fun compute(repo: RepoLayout): StatusResult {
-        val root = repo.root.toAbsolutePath().normalize()
+        val (root, _) = repo.normalizedPaths()
 
         // 1. Load index
         val index = Index.load(repo)
@@ -117,8 +117,7 @@ object Status {
         repo: RepoLayout,
         trackedFiles: Set<String>,
     ): List<String> {
-        val root = repo.root.toAbsolutePath().normalize()
-        val meta = repo.meta.toAbsolutePath().normalize()
+        val (root, meta) = repo.normalizedPaths()
         val untracked = mutableListOf<String>()
 
         Files

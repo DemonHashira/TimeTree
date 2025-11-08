@@ -8,6 +8,7 @@ import dev.kamisama.core.hash.ObjectId
 import java.io.OutputStream
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardCopyOption
 
 /**
  * Delta-aware blob storage that keeps OIDs content-addressed.
@@ -210,8 +211,7 @@ object DeltaStore {
         val objPath = objectPath(repo, contentOid)
         if (!Files.isDirectory(objPath.parent)) Files.createDirectories(objPath.parent)
         if (!Files.exists(objPath)) {
-            val bytes = Files.readAllBytes(deltaFile)
-            AtomicFile(objPath).write(bytes)
+            Files.copy(deltaFile, objPath, StandardCopyOption.COPY_ATTRIBUTES)
         }
     }
 

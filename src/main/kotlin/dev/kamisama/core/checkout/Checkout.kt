@@ -8,6 +8,7 @@ import dev.kamisama.core.objects.DeltaStore
 import dev.kamisama.core.refs.Refs
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
+import java.nio.file.Path
 
 /**
  * Checkout functionality for switching branches or commits.
@@ -79,7 +80,7 @@ object Checkout {
         clearWorkingTree(repo)
 
         // Write all files from the tree to the working directory
-        val root = repo.root.toAbsolutePath().normalize()
+        val (root, _) = repo.normalizedPaths()
         for ((path, blobId) in treeEntries) {
             val filePath = root.resolve(path)
             Files.createDirectories(filePath.parent)
@@ -96,26 +97,29 @@ object Checkout {
      * Clear the working tree (except .timetree directory).
      */
     private fun clearWorkingTree(repo: RepoLayout) {
-        val root = repo.root.toAbsolutePath().normalize()
-        val meta = repo.meta.toAbsolutePath().normalize()
+        val (root, meta) = repo.normalizedPaths()
+        val directoriesToRemove = mutableListOf<Path>()
 
         Files.walk(root).use { stream ->
-            stream.filter { Files.isRegularFile(it) }.filter { !it.startsWith(meta) }.forEach { Files.delete(it) }
-        }
+            stream.forEach { path ->
+                if (path.startsWith(meta)) return@forEach
 
-        // Remove empty directories
-        Files.walk(root).use { stream ->
-            stream
-                .filter { Files.isDirectory(it) }
-                .filter { it != root && it != meta && !it.startsWith(meta) }
-                .sorted(Comparator.reverseOrder())
-                .forEach {
-                    try {
-                        Files.delete(it)
-                    } catch (e: Exception) {
-                        // Directory isn't empty, skip
+                when {
+                    Files.isRegularFile(path) -> Files.delete(path)
+                    Files.isDirectory(path) && path != root && path != meta -> {
+                        directoriesToRemove.add(path)
                     }
                 }
+            }
+        }
+
+        // Remove directories in reverse order
+        directoriesToRemove.sortedDescending().forEach {
+            try {
+                Files.delete(it)
+            } catch (e: Exception) {
+                // Directory isn't empty, skip
+            }
         }
     }
 

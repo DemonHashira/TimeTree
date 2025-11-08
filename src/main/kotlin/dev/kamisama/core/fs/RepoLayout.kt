@@ -24,6 +24,15 @@ data class RepoLayout(
     // Computed property: HEAD file that points to the current branch
     val head: Path get() = meta.resolve("HEAD")
 
+    /**
+     * Returns normalized absolute paths for root and meta directories.
+     */
+    fun normalizedPaths(): Pair<Path, Path> {
+        val normalizedRoot = root.toAbsolutePath().normalize()
+        val normalizedMeta = normalizedRoot.resolve(META_DIR)
+        return normalizedRoot to normalizedMeta
+    }
+
     companion object {
         // Name of the metadata directory
         const val META_DIR: String = ".timetree"
