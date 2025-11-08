@@ -41,3 +41,30 @@ tasks.shadowJar {
     archiveClassifier.set("")
     archiveVersion.set("")
 }
+
+// Create 'tt' wrapper script for shadow JAR
+tasks.register("createTtWrapper") {
+    description = "Creates 'tt' wrapper script for the shadow JAR"
+    dependsOn("shadowJar")
+
+    doLast {
+        val jarFile = file("${layout.buildDirectory.get()}/libs/timetree.jar")
+        val ttScript = file("${layout.buildDirectory.get()}/libs/tt")
+
+        if (jarFile.exists()) {
+            val scriptContent = """#!/bin/sh
+            # TimeTree 'tt' wrapper script
+            # This script runs the timetree.jar file
+
+            JAR_FILE="$(dirname "$0")/timetree.jar"
+            exec java -jar "${'$'}JAR_FILE" "$@"
+            """
+            ttScript.writeText(scriptContent)
+            ttScript.setExecutable(true)
+        }
+    }
+}
+
+tasks.named("shadowJar") {
+    finalizedBy("createTtWrapper")
+}
