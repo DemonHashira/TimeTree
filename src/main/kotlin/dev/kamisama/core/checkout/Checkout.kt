@@ -68,8 +68,9 @@ object Checkout {
         commitId: ObjectId,
     ) {
         // Read the commit to get its tree
-        val treeId = Diff.readCommitTree(repo, commitId)
-            ?: throw IllegalStateException("Commit ${commitId.toHex()} missing 'tree' header")
+        val treeId =
+            Diff.readCommitTree(repo, commitId)
+                ?: throw IllegalStateException("Commit ${commitId.toHex()} missing 'tree' header")
 
         // Read the tree to get all file entries
         val treeEntries = Diff.parseTree(repo, treeId, "")
