@@ -1,7 +1,7 @@
 package dev.kamisama.core.objects
 
-import dev.kamisama.core.delta.io.DeltaIO
 import dev.kamisama.core.delta.RsyncDelta
+import dev.kamisama.core.delta.io.DeltaIO
 import dev.kamisama.core.fs.AtomicFile
 import dev.kamisama.core.fs.RepoLayout
 import dev.kamisama.core.hash.ObjectId
