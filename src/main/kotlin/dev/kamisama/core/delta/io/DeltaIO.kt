@@ -1,5 +1,7 @@
-package dev.kamisama.core.delta
+package dev.kamisama.core.delta.io
 
+import dev.kamisama.core.delta.Delta
+import dev.kamisama.core.delta.DeltaOp
 import java.io.EOFException
 import java.io.InputStream
 import java.io.OutputStream

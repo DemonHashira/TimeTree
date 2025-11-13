@@ -1,5 +1,6 @@
 package dev.kamisama.core.delta
 
+import dev.kamisama.core.delta.io.SignatureIO
 import dev.kamisama.core.hash.ObjectId
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec

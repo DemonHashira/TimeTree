@@ -1,11 +1,11 @@
-package dev.kamisama.cli
+package dev.kamisama.cli.commands
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
-import dev.kamisama.core.delta.DeltaIO
+import dev.kamisama.core.delta.io.DeltaIO
 import dev.kamisama.core.delta.RsyncDelta
 import java.io.FileInputStream
 import java.io.FileOutputStream

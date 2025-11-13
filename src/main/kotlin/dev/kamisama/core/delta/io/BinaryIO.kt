@@ -1,4 +1,4 @@
-package dev.kamisama.core.delta
+package dev.kamisama.core.delta.io
 
 import java.io.EOFException
 import java.io.InputStream

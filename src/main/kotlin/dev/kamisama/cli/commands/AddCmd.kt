@@ -1,9 +1,10 @@
-package dev.kamisama.cli
+package dev.kamisama.cli.commands
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
+import dev.kamisama.cli.Color
 import dev.kamisama.core.fs.RepoLayout
 import dev.kamisama.core.index.Index
 import dev.kamisama.core.objects.DeltaStore

@@ -1,5 +1,7 @@
-package dev.kamisama.core.delta
+package dev.kamisama.core.delta.io
 
+import dev.kamisama.core.delta.BlockSignature
+import dev.kamisama.core.delta.Signature
 import dev.kamisama.core.hash.ObjectId
 import java.io.InputStream
 import java.io.OutputStream

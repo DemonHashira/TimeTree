@@ -1,5 +1,7 @@
 package dev.kamisama.core.delta
 
+import dev.kamisama.core.delta.io.DeltaIO
+import dev.kamisama.core.delta.io.VarInt
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe

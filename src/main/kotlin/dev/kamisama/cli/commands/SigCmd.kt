@@ -1,13 +1,15 @@
-package dev.kamisama.cli
+package dev.kamisama.cli.commands
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
+import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.int
+import dev.kamisama.cli.Color
 import dev.kamisama.core.delta.RsyncDelta
-import dev.kamisama.core.delta.SignatureIO
+import dev.kamisama.core.delta.io.SignatureIO
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.nio.file.Paths
@@ -25,7 +27,7 @@ class SigCmd : CliktCommand(name = "sig") {
     override fun run() {
         if (blockSize < 64 || blockSize > 1024 * 1024) {
             echo("${Color.red("Error:")} Block size must be between 64 and 1048576 (got $blockSize)", err = true)
-            throw IllegalArgumentException("Invalid block size")
+            throw ProgramResult(1)
         }
 
         val basisPath = Paths.get(basis)

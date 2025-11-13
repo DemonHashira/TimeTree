@@ -1,4 +1,4 @@
-package dev.kamisama.cli
+package dev.kamisama.cli.commands
 
 import com.github.ajalt.clikt.testing.test
 import dev.kamisama.core.fs.RepoLayout

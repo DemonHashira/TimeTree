@@ -1,8 +1,9 @@
-package dev.kamisama.cli
+package dev.kamisama.cli.commands
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.core.ProgramResult
+import dev.kamisama.cli.Color
 import dev.kamisama.core.fs.RepoLayout
 import dev.kamisama.core.fs.ensureInitialized
 import java.io.IOException

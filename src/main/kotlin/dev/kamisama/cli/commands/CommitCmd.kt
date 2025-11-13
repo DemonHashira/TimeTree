@@ -1,4 +1,4 @@
-package dev.kamisama.cli
+package dev.kamisama.cli.commands
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
@@ -7,6 +7,8 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
+import dev.kamisama.cli.CliUtils
+import dev.kamisama.cli.Color
 import dev.kamisama.core.diff.Diff
 import dev.kamisama.core.fs.RepoLayout
 import dev.kamisama.core.index.Index
