@@ -4,7 +4,6 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
-import dev.kamisama.cli.Color
 import dev.kamisama.core.fs.RepoLayout
 import dev.kamisama.core.index.Index
 import dev.kamisama.core.objects.DeltaStore
@@ -27,7 +26,7 @@ class AddCmd(
         val repo = repoProvider()
 
         if (inputs.isEmpty()) {
-            echo(Color.yellow("Nothing specified, nothing added."))
+            echo("Nothing specified, nothing added.")
             return
         }
 
@@ -83,10 +82,10 @@ class AddCmd(
                 if (!p.startsWith(meta)) {
                     filesToAdd.add(p)
                 } else {
-                    echo("${Color.yellow("skip:")} $raw (internal .timetree directory)")
+                    echo("skip: $raw (internal .timetree directory)")
                 }
             } else {
-                echo("${Color.yellow("skip:")} $raw (not found or not a regular file)")
+                echo("skip: $raw (not found or not a regular file)")
             }
         }
 
@@ -102,7 +101,7 @@ class AddCmd(
         // Process all collected files
         for (abs in filesToAdd) {
             if (!abs.startsWith(root)) {
-                echo("${Color.yellow("warning:")} '$abs' is outside repository")
+                echo("warning: '$abs' is outside repository")
                 continue
             }
 
@@ -158,17 +157,17 @@ class AddCmd(
 
         if (unchanged.isNotEmpty() && (added.isEmpty() && updated.isEmpty())) {
             // Only show unchanged if nothing was actually staged
-            echo(Color.yellow("All ${unchanged.size} file(s) already staged and up-to-date"))
+            echo("All ${unchanged.size} file(s) already staged and up-to-date")
         }
 
         // Final summary
         val totalChanged = added.size + updated.size
         if (totalChanged == 0 && filesToAdd.isEmpty()) {
-            echo(Color.yellow("Nothing specified, nothing added."))
+            echo("Nothing specified, nothing added.")
         } else if (totalChanged > 0) {
-            echo(Color.green("Staged $totalChanged file(s) for commit"))
+            echo("Staged $totalChanged file(s) for commit")
             if (deltasUsed > 0) {
-                echo(Color.yellow("  ($deltasUsed stored as delta)"))
+                echo("  ($deltasUsed stored as delta)")
             }
         }
     }

@@ -88,7 +88,7 @@ class BranchCmd(
         // Create the branch
         try {
             Refs.createBranch(repo, name, head.id)
-            echo("${Color.green("Created branch")} '$name'")
+            echo("Created branch '$name'")
         } catch (e: Exception) {
             echo("${Color.red("error:")} ${e.message}", err = true)
             throw ProgramResult(1)
@@ -108,7 +108,7 @@ class BranchCmd(
 
         // Delete the branch
         if (Refs.deleteBranch(repo, name)) {
-            echo("${Color.red("Deleted branch")} '$name'")
+            echo("Deleted branch '$name'")
         } else {
             echo("${Color.red("error:")} branch '$name' not found", err = true)
             throw ProgramResult(1)

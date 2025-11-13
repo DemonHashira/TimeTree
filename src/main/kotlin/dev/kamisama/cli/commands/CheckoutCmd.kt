@@ -70,13 +70,13 @@ class CheckoutCmd(
     ) {
         val head = Refs.readHead(repo)
         if (head.currentBranch() == branchName) {
-            echo("${Color.yellow("Already on")} '$branchName'")
+            echo("Already on '$branchName'")
             return
         }
 
         try {
             Checkout.checkoutBranch(repo, branchName)
-            echo("${Color.green("Switched to branch")} '$branchName'")
+            echo("Switched to branch '$branchName'")
         } catch (e: Exception) {
             echo("${Color.red("error:")} ${e.message}", err = true)
             throw ProgramResult(1)
@@ -89,10 +89,10 @@ class CheckoutCmd(
     ) {
         try {
             Checkout.checkoutCommit(repo, commitId)
-            echo("${Color.yellow("HEAD is now at")} ${commitId.toHex().take(12)}")
-            echo("${Color.yellow("Note:")} switching to '${commitId.toHex().take(12)}'.")
+            echo("HEAD is now at ${commitId.toHex().take(12)}")
+            echo("Note: switching to '${commitId.toHex().take(12)}'.")
             echo("")
-            echo("${Color.yellow("You are in 'detached HEAD' state.")} You can make commits, but they")
+            echo("You are in 'detached HEAD' state. You can make commits, but they")
             echo("won't belong to any branch unless you create a new branch.")
         } catch (e: Exception) {
             echo("${Color.red("error:")} ${e.message}", err = true)
@@ -130,7 +130,7 @@ class CheckoutCmd(
             // Checkout the new branch
             Refs.ensureHeadOn(repo, "refs/heads/$branchName")
 
-            echo("${Color.green("Switched to a new branch")} '$branchName'")
+            echo("Switched to a new branch '$branchName'")
         } catch (e: Exception) {
             echo("${Color.red("error:")} ${e.message}", err = true)
             throw ProgramResult(1)

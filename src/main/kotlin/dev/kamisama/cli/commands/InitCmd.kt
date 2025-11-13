@@ -41,9 +41,9 @@ class InitCmd(
 
             // Provide appropriate feedback
             if (created) {
-                echo("${Color.green("Initialized TimeTree repo")} in ${repo.meta}")
+                echo("Initialized TimeTree repo in ${repo.meta}")
             } else {
-                echo("${Color.yellow("Reinitialized existing TimeTree repository")} in ${repo.meta}")
+                echo("Reinitialized existing TimeTree repository in ${repo.meta}")
             }
         } catch (e: IOException) {
             echo("${Color.red("Error:")} Failed to initialize repository: ${e.message}", err = true)

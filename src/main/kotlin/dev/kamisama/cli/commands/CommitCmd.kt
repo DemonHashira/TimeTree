@@ -8,7 +8,6 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import dev.kamisama.cli.CliUtils
-import dev.kamisama.cli.Color
 import dev.kamisama.core.diff.Diff
 import dev.kamisama.core.fs.RepoLayout
 import dev.kamisama.core.index.Index
@@ -34,7 +33,7 @@ class CommitCmd(
         // Load staged entries
         val staged = Index.load(repo)
         if (staged.isEmpty() && !allowEmpty) {
-            echo("${Color.red("Nothing to commit.")} Use --allow-empty to create an empty commit.", err = true)
+            echo("Nothing to commit. Use --allow-empty to create an empty commit.", err = true)
             throw ProgramResult(1)
         }
 
@@ -54,7 +53,7 @@ class CommitCmd(
             val parentTreeId = Diff.readCommitTree(repo, parent)
             if (parentTreeId == null || parentTreeId == treeId) {
                 echo(
-                    "${Color.red("Nothing to commit")} - tree is identical to parent commit. " +
+                    "Nothing to commit - tree is identical to parent commit. " +
                         "Use --allow-empty to create an empty commit.",
                     err = true,
                 )
