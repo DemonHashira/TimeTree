@@ -67,7 +67,7 @@ class LogCmd(
     }
 
     /**
-     * Build a reference string like "(HEAD -> master, feature)"
+     * Build a reference string like "(HEAD -> master, feature)" with colors.
      */
     private fun buildReferenceString(
         commitHex: String,
@@ -84,23 +84,23 @@ class LogCmd(
         if (head.id?.toHex() == commitHex) {
             if (currentBranch != null && currentBranch in branchesAtCommit) {
                 // HEAD points to a branch which points to this commit
-                refParts.add("HEAD -> $currentBranch")
+                refParts.add("${Color.yellow("HEAD")} -> ${Color.green(currentBranch)}")
                 // Add other branches (excluding the current one)
                 branchesAtCommit.filter { it != currentBranch }.sorted().forEach {
-                    refParts.add(it)
+                    refParts.add(Color.green(it))
                 }
             } else {
                 // Detached HEAD
-                refParts.add("HEAD")
+                refParts.add(Color.yellow("HEAD"))
                 // Add all branches
                 branchesAtCommit.sorted().forEach {
-                    refParts.add(it)
+                    refParts.add(Color.green(it))
                 }
             }
         } else {
             // HEAD doesn't point here, just show branches
             branchesAtCommit.sorted().forEach {
-                refParts.add(it)
+                refParts.add(Color.green(it))
             }
         }
 

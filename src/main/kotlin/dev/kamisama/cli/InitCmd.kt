@@ -25,12 +25,12 @@ class InitCmd(
 
         // Validate preconditions before attempting initialization
         if (Files.exists(repo.meta) && !Files.isDirectory(repo.meta)) {
-            echo("Error: ${repo.meta} exists but is not a directory", err = true)
+            echo("${Color.red("Error:")} ${repo.meta} exists but is not a directory", err = true)
             throw ProgramResult(1)
         }
 
         if (!Files.isWritable(repo.root)) {
-            echo("Error: No write permission in ${repo.root}", err = true)
+            echo("${Color.red("Error:")} No write permission in ${repo.root}", err = true)
             throw ProgramResult(1)
         }
 
@@ -40,12 +40,12 @@ class InitCmd(
 
             // Provide appropriate feedback
             if (created) {
-                echo("Initialized TimeTree repo in ${repo.meta}")
+                echo("${Color.green("Initialized TimeTree repo")} in ${repo.meta}")
             } else {
-                echo("Reinitialized existing TimeTree repository in ${repo.meta}")
+                echo("${Color.yellow("Reinitialized existing TimeTree repository")} in ${repo.meta}")
             }
         } catch (e: IOException) {
-            echo("Error: Failed to initialize repository: ${e.message}", err = true)
+            echo("${Color.red("Error:")} Failed to initialize repository: ${e.message}", err = true)
             throw ProgramResult(1)
         }
     }

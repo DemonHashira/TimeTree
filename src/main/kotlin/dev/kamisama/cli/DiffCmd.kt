@@ -45,7 +45,7 @@ class DiffCmd(
 
         val context = contextLines.toIntOrNull() ?: 3
         if (context < 0) {
-            echo("Error: context lines must be non-negative", err = true)
+            echo("${Color.red("Error:")} context lines must be non-negative", err = true)
             throw ProgramResult(1)
         }
 
@@ -62,7 +62,7 @@ class DiffCmd(
                     val id1 = resolveCommit(repo, commit1!!)
                     val head = Refs.readHead(repo)
                     if (head.id == null) {
-                        echo("Error: no commits yet", err = true)
+                        echo("${Color.red("Error:")} no commits yet", err = true)
                         throw ProgramResult(1)
                     }
                     showDiff(repo, id1, head.id, context)
@@ -77,7 +77,7 @@ class DiffCmd(
                 }
             }
         } catch (e: IllegalArgumentException) {
-            echo("Error: ${e.message}", err = true)
+            echo("${Color.red("Error:")} ${e.message}", err = true)
             throw ProgramResult(1)
         }
     }
@@ -93,7 +93,7 @@ class DiffCmd(
         if (diff.isEmpty()) {
             echo("No differences found")
         } else {
-            echo(diff.trimEnd())
+            echo(colorizeDiff(diff.trimEnd()))
         }
     }
 
@@ -139,7 +139,7 @@ class DiffCmd(
         if (!hasChanges) {
             echo("No changes in working directory")
         } else {
-            echo(result.toString().trimEnd())
+            echo(colorizeDiff(result.toString().trimEnd()))
         }
     }
 
@@ -185,7 +185,7 @@ class DiffCmd(
         if (!hasChanges) {
             echo("No changes staged")
         } else {
-            echo(result.toString().trimEnd())
+            echo(colorizeDiff(result.toString().trimEnd()))
         }
     }
 
@@ -259,5 +259,19 @@ class DiffCmd(
         }
 
         return matches
+    }
+
+    private fun colorizeDiff(diff: String): String {
+        if (!Color.enabled) {
+            return diff
+        }
+
+        return diff.lines().joinToString("\n") { line ->
+            when {
+                line.startsWith("new file") -> Color.green(line)
+                line.startsWith("deleted file") -> Color.red(line)
+                else -> line
+            }
+        }
     }
 }

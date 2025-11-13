@@ -24,7 +24,7 @@ class SigCmd : CliktCommand(name = "sig") {
 
     override fun run() {
         if (blockSize < 64 || blockSize > 1024 * 1024) {
-            echo("Error: Block size must be between 64 and 1048576 (got $blockSize)", err = true)
+            echo("${Color.red("Error:")} Block size must be between 64 and 1048576 (got $blockSize)", err = true)
             throw IllegalArgumentException("Invalid block size")
         }
 

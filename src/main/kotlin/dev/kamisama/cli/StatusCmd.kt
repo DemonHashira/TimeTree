@@ -18,13 +18,13 @@ class StatusCmd(
 
         // Display results in a format similar to git status
         if (status.staged.isEmpty() && status.unstaged.isEmpty() && status.untracked.isEmpty()) {
-            echo("nothing to commit, working tree clean")
+            echo(Color.green("nothing to commit, working tree clean"))
             return
         }
 
         // Staged changes
         if (status.staged.isNotEmpty()) {
-            echo("Changes to be committed:")
+            echo(Color.green("Changes to be committed:"))
             echo("")
             for (file in status.staged) {
                 echo("        modified:   $file")
@@ -36,7 +36,7 @@ class StatusCmd(
 
         // Unstaged changes
         if (status.unstaged.isNotEmpty()) {
-            echo("Changes not staged for commit:")
+            echo(Color.red("Changes not staged for commit:"))
             echo("  (use \"timetree add <file>...\" to update what will be committed)")
             echo("")
             for (file in status.unstaged) {
@@ -49,7 +49,7 @@ class StatusCmd(
 
         // Untracked files
         if (status.untracked.isNotEmpty()) {
-            echo("Untracked files:")
+            echo(Color.red("Untracked files:"))
             echo("  (use \"timetree add <file>...\" to include in what will be committed)")
             for (file in status.untracked) {
                 echo("        $file")

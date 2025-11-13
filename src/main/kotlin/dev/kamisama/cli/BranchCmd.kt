@@ -52,8 +52,11 @@ class BranchCmd(
 
         // Sort branches for consistent output
         branches.keys.sorted().forEach { branchName ->
-            val prefix = if (branchName == currentBranch) "* " else "  "
-            echo("$prefix$branchName")
+            if (branchName == currentBranch) {
+                echo("${Color.green("*")} $branchName")
+            } else {
+                echo("  $branchName")
+            }
         }
     }
 
@@ -63,29 +66,29 @@ class BranchCmd(
     ) {
         // Validate branch name
         if (!CliUtils.isValidBranchName(name)) {
-            echo("error: invalid branch name '$name'", err = true)
+            echo("${Color.red("error:")} invalid branch name '$name'", err = true)
             throw ProgramResult(1)
         }
 
         // Check if a branch already exists
         if (Refs.branchExists(repo, name)) {
-            echo("error: branch '$name' already exists", err = true)
+            echo("${Color.red("error:")} branch '$name' already exists", err = true)
             throw ProgramResult(1)
         }
 
         // Check if we have any commits
         val head = Refs.readHead(repo)
         if (head.id == null) {
-            echo("error: cannot create branch - no commits yet", err = true)
+            echo("${Color.red("error:")} cannot create branch - no commits yet", err = true)
             throw ProgramResult(1)
         }
 
         // Create the branch
         try {
             Refs.createBranch(repo, name, head.id)
-            echo("Created branch '$name'")
+            echo("${Color.green("Created branch")} '$name'")
         } catch (e: Exception) {
-            echo("error: ${e.message}", err = true)
+            echo("${Color.red("error:")} ${e.message}", err = true)
             throw ProgramResult(1)
         }
     }
@@ -97,15 +100,15 @@ class BranchCmd(
         // Check if trying to delete the current branch
         val head = Refs.readHead(repo)
         if (head.currentBranch() == name) {
-            echo("error: cannot delete the currently checked out branch '$name'", err = true)
+            echo("${Color.red("error:")} cannot delete the currently checked out branch '$name'", err = true)
             throw ProgramResult(1)
         }
 
         // Delete the branch
         if (Refs.deleteBranch(repo, name)) {
-            echo("Deleted branch '$name'")
+            echo("${Color.red("Deleted branch")} '$name'")
         } else {
-            echo("error: branch '$name' not found", err = true)
+            echo("${Color.red("error:")} branch '$name' not found", err = true)
             throw ProgramResult(1)
         }
     }

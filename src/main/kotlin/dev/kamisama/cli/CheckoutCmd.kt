@@ -58,7 +58,7 @@ class CheckoutCmd(
             // Not a valid commit ID
         }
 
-        echo("error: pathspec '$target' did not match any branch or commit", err = true)
+        echo("${Color.red("error:")} pathspec '$target' did not match any branch or commit", err = true)
         throw ProgramResult(1)
     }
 
@@ -68,15 +68,15 @@ class CheckoutCmd(
     ) {
         val head = Refs.readHead(repo)
         if (head.currentBranch() == branchName) {
-            echo("Already on '$branchName'")
+            echo("${Color.yellow("Already on")} '$branchName'")
             return
         }
 
         try {
             Checkout.checkoutBranch(repo, branchName)
-            echo("Switched to branch '$branchName'")
+            echo("${Color.green("Switched to branch")} '$branchName'")
         } catch (e: Exception) {
-            echo("error: ${e.message}", err = true)
+            echo("${Color.red("error:")} ${e.message}", err = true)
             throw ProgramResult(1)
         }
     }
@@ -87,13 +87,13 @@ class CheckoutCmd(
     ) {
         try {
             Checkout.checkoutCommit(repo, commitId)
-            echo("HEAD is now at ${commitId.toHex().take(12)}")
-            echo("Note: switching to '${commitId.toHex().take(12)}'.")
+            echo("${Color.yellow("HEAD is now at")} ${commitId.toHex().take(12)}")
+            echo("${Color.yellow("Note:")} switching to '${commitId.toHex().take(12)}'.")
             echo("")
-            echo("You are in 'detached HEAD' state. You can make commits, but they")
+            echo("${Color.yellow("You are in 'detached HEAD' state.")} You can make commits, but they")
             echo("won't belong to any branch unless you create a new branch.")
         } catch (e: Exception) {
-            echo("error: ${e.message}", err = true)
+            echo("${Color.red("error:")} ${e.message}", err = true)
             throw ProgramResult(1)
         }
     }
@@ -104,20 +104,20 @@ class CheckoutCmd(
     ) {
         // Validate branch name
         if (!CliUtils.isValidBranchName(branchName)) {
-            echo("error: invalid branch name '$branchName'", err = true)
+            echo("${Color.red("error:")} invalid branch name '$branchName'", err = true)
             throw ProgramResult(1)
         }
 
         // Check if a branch already exists
         if (Refs.branchExists(repo, branchName)) {
-            echo("error: branch '$branchName' already exists", err = true)
+            echo("${Color.red("error:")} branch '$branchName' already exists", err = true)
             throw ProgramResult(1)
         }
 
         // Check if we have any commits
         val head = Refs.readHead(repo)
         if (head.id == null) {
-            echo("error: cannot create branch - no commits yet", err = true)
+            echo("${Color.red("error:")} cannot create branch - no commits yet", err = true)
             throw ProgramResult(1)
         }
 
@@ -128,9 +128,9 @@ class CheckoutCmd(
             // Checkout the new branch
             Refs.ensureHeadOn(repo, "refs/heads/$branchName")
 
-            echo("Switched to a new branch '$branchName'")
+            echo("${Color.green("Switched to a new branch")} '$branchName'")
         } catch (e: Exception) {
-            echo("error: ${e.message}", err = true)
+            echo("${Color.red("error:")} ${e.message}", err = true)
             throw ProgramResult(1)
         }
     }

@@ -26,7 +26,7 @@ class AddCmd(
         val repo = repoProvider()
 
         if (inputs.isEmpty()) {
-            echo("Nothing specified, nothing added.")
+            echo(Color.yellow("Nothing specified, nothing added."))
             return
         }
 
@@ -82,10 +82,10 @@ class AddCmd(
                 if (!p.startsWith(meta)) {
                     filesToAdd.add(p)
                 } else {
-                    echo("skip: $raw (internal .timetree directory)")
+                    echo("${Color.yellow("skip:")} $raw (internal .timetree directory)")
                 }
             } else {
-                echo("skip: $raw (not found or not a regular file)")
+                echo("${Color.yellow("skip:")} $raw (not found or not a regular file)")
             }
         }
 
@@ -101,7 +101,7 @@ class AddCmd(
         // Process all collected files
         for (abs in filesToAdd) {
             if (!abs.startsWith(root)) {
-                echo("warning: '$abs' is outside repository")
+                echo("${Color.yellow("warning:")} '$abs' is outside repository")
                 continue
             }
 
@@ -157,17 +157,17 @@ class AddCmd(
 
         if (unchanged.isNotEmpty() && (added.isEmpty() && updated.isEmpty())) {
             // Only show unchanged if nothing was actually staged
-            echo("All ${unchanged.size} file(s) already staged and up-to-date")
+            echo(Color.yellow("All ${unchanged.size} file(s) already staged and up-to-date"))
         }
 
         // Final summary
         val totalChanged = added.size + updated.size
         if (totalChanged == 0 && filesToAdd.isEmpty()) {
-            echo("Nothing specified, nothing added.")
+            echo(Color.yellow("Nothing specified, nothing added."))
         } else if (totalChanged > 0) {
-            echo("Staged $totalChanged file(s) for commit")
+            echo(Color.green("Staged $totalChanged file(s) for commit"))
             if (deltasUsed > 0) {
-                echo("  ($deltasUsed stored as delta)")
+                echo(Color.yellow("  ($deltasUsed stored as delta)"))
             }
         }
     }

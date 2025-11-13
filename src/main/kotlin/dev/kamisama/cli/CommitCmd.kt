@@ -32,7 +32,7 @@ class CommitCmd(
         // Load staged entries
         val staged = Index.load(repo)
         if (staged.isEmpty() && !allowEmpty) {
-            echo("Nothing to commit. Use --allow-empty to create an empty commit.", err = true)
+            echo("${Color.red("Nothing to commit.")} Use --allow-empty to create an empty commit.", err = true)
             throw ProgramResult(1)
         }
 
@@ -52,7 +52,7 @@ class CommitCmd(
             val parentTreeId = Diff.readCommitTree(repo, parent)
             if (parentTreeId == null || parentTreeId == treeId) {
                 echo(
-                    "Nothing to commit - tree is identical to parent commit. " +
+                    "${Color.red("Nothing to commit")} - tree is identical to parent commit. " +
                         "Use --allow-empty to create an empty commit.",
                     err = true,
                 )
@@ -72,9 +72,13 @@ class CommitCmd(
 
         // Update ref
         val branchRef = head.refPath ?: "refs/heads/master"
-        Refs.ensureHeadOn(repo, branchRef) // in case HEAD was missing/detached on new repo
+        Refs.ensureHeadOn(repo, branchRef)
         Refs.updateRef(repo, branchRef, commitId.toHex())
 
-        echo("[${branchRef.substringAfterLast('/')}] ${commitId.toHex().take(12)} ${message.lineSequence().first()}")
+        val branchName = branchRef.substringAfterLast('/')
+        val commitMessage = message.lineSequence().first()
+        echo(
+            "[$branchName] ${commitId.toHex().take(12)} $commitMessage",
+        )
     }
 }
