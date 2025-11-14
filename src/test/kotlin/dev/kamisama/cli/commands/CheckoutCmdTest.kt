@@ -12,6 +12,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import java.nio.file.Files
 
+/** Tests for branch switching. */
 class CheckoutCmdTest :
     StringSpec({
 
@@ -20,21 +21,18 @@ class CheckoutCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create an initial commit
             val file1 = tmp.resolve("file1.txt")
             Files.writeString(file1, "content1")
             val blob1 = FsObjectStore.writeBlob(repo, file1)
             Index.update(repo, "file1.txt", blob1)
             CommitCmd { repo }.test(arrayOf("-m", "initial"))
 
-            // Create and checkout new branch
             BranchCmd { repo }.test(arrayOf("feature"))
             val result = CheckoutCmd { repo }.test(arrayOf("feature"))
 
             result.statusCode shouldBe 0
             result.stdout shouldContain "Switched to branch 'feature'"
 
-            // Verify we're on the new branch
             val head = Refs.readHead(repo)
             head.currentBranch() shouldBe "feature"
         }
@@ -44,14 +42,12 @@ class CheckoutCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create an initial commit
             val file = tmp.resolve("test.txt")
             Files.writeString(file, "content")
             val blobId = FsObjectStore.writeBlob(repo, file)
             Index.update(repo, "test.txt", blobId)
             CommitCmd { repo }.test(arrayOf("-m", "initial"))
 
-            // Checkout current branch
             val result = CheckoutCmd { repo }.test(arrayOf("master"))
 
             result.statusCode shouldBe 0
@@ -63,20 +59,17 @@ class CheckoutCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create an initial commit
             val file = tmp.resolve("test.txt")
             Files.writeString(file, "content")
             val blobId = FsObjectStore.writeBlob(repo, file)
             Index.update(repo, "test.txt", blobId)
             CommitCmd { repo }.test(arrayOf("-m", "initial"))
 
-            // Create and checkout new branch
             val result = CheckoutCmd { repo }.test(arrayOf("-b", "newbranch"))
 
             result.statusCode shouldBe 0
             result.stdout shouldContain "Switched to a new branch 'newbranch'"
 
-            // Verify branch exists and we're on it
             Refs.branchExists(repo, "newbranch") shouldBe true
             Refs.readHead(repo).currentBranch() shouldBe "newbranch"
         }
@@ -86,14 +79,12 @@ class CheckoutCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create an initial commit
             val file = tmp.resolve("test.txt")
             Files.writeString(file, "content")
             val blobId = FsObjectStore.writeBlob(repo, file)
             Index.update(repo, "test.txt", blobId)
             CommitCmd { repo }.test(arrayOf("-m", "initial"))
 
-            // Try to checkout non-existent branch
             val result = CheckoutCmd { repo }.test(arrayOf("nonexistent"))
 
             result.statusCode shouldBe 1

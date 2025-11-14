@@ -3,6 +3,7 @@ package dev.kamisama.core.delta
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
+/** Tests for byte accumulator buffer. */
 class ByteAccumulatorSpec :
     StringSpec({
 

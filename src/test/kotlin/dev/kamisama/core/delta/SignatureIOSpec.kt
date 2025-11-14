@@ -8,6 +8,7 @@ import io.kotest.matchers.shouldBe
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 
+/** Tests for signature serialization. */
 class SignatureIOSpec :
     FunSpec({
 

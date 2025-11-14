@@ -12,9 +12,7 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import java.nio.file.Files
 
-/**
- * Tests for the LogCmd functionality - verifies commit history display.
- */
+/** Tests for commit history display. */
 class LogCmdTest :
     StringSpec({
 
@@ -93,12 +91,10 @@ class LogCmdTest :
 
             result.statusCode shouldBe 0
 
-            // Verify all three commits appear
             result.stdout shouldContain "First commit"
             result.stdout shouldContain "Second commit"
             result.stdout shouldContain "Third commit"
 
-            // Verify reverse chronological order (newest first)
             val firstIdx = result.stdout.indexOf("First commit")
             val secondIdx = result.stdout.indexOf("Second commit")
             val thirdIdx = result.stdout.indexOf("Third commit")
@@ -122,7 +118,6 @@ class LogCmdTest :
 
             result.statusCode shouldBe 0
 
-            // Extract commit ID from output
             val commitLine = result.stdout.lines().first { it.startsWith("commit ") }
             val afterCommit = commitLine.removePrefix("commit ").trim()
             val commitId = afterCommit.split(" ", "(")[0].trim()
@@ -151,11 +146,9 @@ class LogCmdTest :
 
             result.statusCode shouldBe 0
 
-            // Should show commits 5 and 4 (most recent)
             result.stdout shouldContain "Commit 5"
             result.stdout shouldContain "Commit 4"
 
-            // Should NOT show commits 3, 2, 1
             result.stdout shouldNotContain "Commit 3"
             result.stdout shouldNotContain "Commit 2"
             result.stdout shouldNotContain "Commit 1"
@@ -186,15 +179,12 @@ class LogCmdTest :
 
             result.statusCode shouldBe 0
 
-            // Should show the first line
             result.stdout shouldContain "First line of commit"
 
-            // Should NOT show body in the summary
             val lines = result.stdout.lines()
             val messageLineIdx = lines.indexOfFirst { it.contains("First line of commit") }
             val messageLine = lines[messageLineIdx]
 
-            // Verify only the first line appears in that position
             messageLine.trim() shouldBe "First line of commit"
         }
 
@@ -214,25 +204,12 @@ class LogCmdTest :
 
             result.statusCode shouldBe 0
 
-            // Should have a Date line with a formatted timestamp
             val dateLine = result.stdout.lines().first { it.startsWith("Date:") }
 
-            // Git format: "DayOfWeek Month Day HH:mm:ss Year Timezone"
-            // Example: "Date:   Thu Oct 19 14:30:45 2025 +0000"
-
-            // Should contain day of the week (3 letters)
             dateLine shouldContain Regex("""(Mon|Tue|Wed|Thu|Fri|Sat|Sun)""")
-
-            // Should contain a month (3 letters)
             dateLine shouldContain Regex("""(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)""")
-
-            // Should contain time format HH:mm:ss
             dateLine shouldContain Regex("""\d{2}:\d{2}:\d{2}""")
-
-            // Should contain a year (4 digits)
             dateLine shouldContain Regex("""\d{4}""")
-
-            // Should contain timezone offset
             dateLine shouldContain Regex("""[+-]\d{4}""")
         }
 
@@ -301,12 +278,10 @@ class LogCmdTest :
 
             result.statusCode shouldBe 0
 
-            // All 10 commits should be shown
             for (i in 1..10) {
                 result.stdout shouldContain "Commit $i"
             }
 
-            // Count commit entries
             val commitCount = result.stdout.lines().count { it.startsWith("commit ") }
             commitCount shouldBe 10
         }
@@ -323,7 +298,6 @@ class LogCmdTest :
             Index.update(repo, "file1.txt", blob1)
             CommitCmd { repo }.test(arrayOf("-m", "First commit"))
 
-            // Create a branch pointing to the same commit
             BranchCmd { repo }.test(arrayOf("feature"))
 
             val cmd = LogCmd { repo }
@@ -331,7 +305,6 @@ class LogCmdTest :
 
             result.statusCode shouldBe 0
 
-            // Should show HEAD -> master and feature branch
             result.stdout shouldContain "(HEAD -> master, feature)"
         }
 
@@ -352,7 +325,6 @@ class LogCmdTest :
 
             result.statusCode shouldBe 0
 
-            // Should show HEAD -> master
             result.stdout shouldContain "HEAD -> master"
         }
 
@@ -368,10 +340,8 @@ class LogCmdTest :
             Index.update(repo, "file1.txt", blob1)
             CommitCmd { repo }.test(arrayOf("-m", "First commit"))
 
-            // Create and checkout feature branch
             CheckoutCmd { repo }.test(arrayOf("-b", "feature"))
 
-            // Commit on feature
             val file2 = tmp.resolve("file2.txt")
             Files.writeString(file2, "content2")
             val blob2 = FsObjectStore.writeBlob(repo, file2)
@@ -383,11 +353,9 @@ class LogCmdTest :
 
             result.statusCode shouldBe 0
 
-            // The latest commit should show the HEAD-> feature
             val firstCommitLine = result.stdout.lines().first { it.startsWith("commit ") }
             firstCommitLine shouldContain "HEAD -> feature"
 
-            // First commit should show master branch
             result.stdout shouldContain "(master)"
         }
     })

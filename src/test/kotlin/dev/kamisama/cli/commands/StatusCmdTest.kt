@@ -12,9 +12,7 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import java.nio.file.Files
 
-/**
- * Tests for the StatusCmd functionality - verifies status reporting for the working tree, index, and HEAD.
- */
+/** Tests for working tree status reporting. */
 class StatusCmdTest :
     StringSpec({
 
@@ -265,7 +263,6 @@ class StatusCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create and stage multiple files
             for (name in listOf("zebra.txt", "alpha.txt", "beta.txt")) {
                 val file = tmp.resolve(name)
                 Files.writeString(file, "content")
@@ -279,7 +276,6 @@ class StatusCmdTest :
             result.statusCode shouldBe 0
             result.stdout shouldContain "Changes to be committed:"
 
-            // Verify files appear in sorted order
             val lines = result.stdout.lines()
             val alphaIdx = lines.indexOfFirst { it.contains("alpha.txt") }
             val betaIdx = lines.indexOfFirst { it.contains("beta.txt") }
@@ -300,8 +296,6 @@ class StatusCmdTest :
             Index.update(repo, "tracked.txt", blobId)
             CommitCmd { repo }.test(arrayOf("-m", "add tracked.txt"))
 
-            // Remove from index by creating a new empty index
-            // (Simulating a remove operation)
             val indexPath = repo.meta.resolve("index")
             Files.delete(indexPath)
 
@@ -309,10 +303,8 @@ class StatusCmdTest :
             val result = cmd.test(emptyArray())
 
             result.statusCode shouldBe 0
-            // File is staged for deletion (was in HEAD, not in index)
             result.stdout shouldContain "Changes to be committed:"
             result.stdout shouldContain "tracked.txt"
-            // File still exists in the working tree, so it's also untracked
             result.stdout shouldContain "Untracked files:"
         }
 
@@ -325,17 +317,14 @@ class StatusCmdTest :
             Files.writeString(tmp.resolve("untracked1.txt"), "content1")
             Files.writeString(tmp.resolve("untracked2.txt"), "content2")
 
-            // Count objects before status
             val objectsBefore = Files.walk(repo.objects).filter { Files.isRegularFile(it) }.count()
 
-            // Run status
             val cmd = StatusCmd { repo }
             val result = cmd.test(emptyArray())
 
             result.statusCode shouldBe 0
             result.stdout shouldContain "Untracked files:"
 
-            // Count objects after status - should be the same
             val objectsAfter = Files.walk(repo.objects).filter { Files.isRegularFile(it) }.count()
 
             objectsAfter shouldBe objectsBefore
@@ -353,12 +342,10 @@ class StatusCmdTest :
             Index.update(repo, "tracked.txt", blobId)
             CommitCmd { repo }.test(arrayOf("-m", "initial"))
 
-            // Create many untracked files
             for (i in 1..100) {
                 Files.writeString(tmp.resolve("untracked$i.txt"), "large content ".repeat(1000))
             }
 
-            // Run status - should be fast because it doesn't hash untracked files
             val cmd = StatusCmd { repo }
             val startTime = System.currentTimeMillis()
             val result = cmd.test(emptyArray())
@@ -367,10 +354,6 @@ class StatusCmdTest :
             result.statusCode shouldBe 0
             result.stdout shouldContain "Untracked files:"
 
-            // Performance assertion: should complete reasonably fast
-            // With lazy evaluation: only hashes 1 tracked file
-            // Without lazy evaluation: would hash all 101 files
-            // This should be noticeably faster
-            (duration < 5000) shouldBe true // Should complete in under 5 seconds
+            (duration < 5000) shouldBe true
         }
     })

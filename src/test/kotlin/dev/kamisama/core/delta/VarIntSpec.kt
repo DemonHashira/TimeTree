@@ -7,6 +7,7 @@ import io.kotest.matchers.shouldBe
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 
+/** Tests for variable-length integer encoding. */
 class VarIntSpec :
     DescribeSpec({
 

@@ -6,10 +6,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 
-/**
- * Tests for Myers O(ND) diff algorithm implementation.
- * Validates both edit computation and unified diff formatting.
- */
+/** Tests for Myers diff algorithm. */
 class MyersTest :
     StringSpec({
 
@@ -273,7 +270,6 @@ class MyersTest :
                 )
             val edits = Myers.computeEdits(a, b)
 
-            // Verify the key changes are present
             val keeps = edits.filterIsInstance<Myers.Edit.Keep>()
             val deletes = edits.filterIsInstance<Myers.Edit.Delete>()
             val inserts = edits.filterIsInstance<Myers.Edit.Insert>()
@@ -293,7 +289,6 @@ class MyersTest :
             val b = listOf("A", "X", "B", "Y", "C", "Z", "D", "E")
             val edits = Myers.computeEdits(a, b)
 
-            // Should preserve A, B, C, D, E as Keep operations
             val keeps = edits.filterIsInstance<Myers.Edit.Keep>()
             keeps.map { it.line } shouldBe listOf("A", "B", "C", "D", "E")
         }

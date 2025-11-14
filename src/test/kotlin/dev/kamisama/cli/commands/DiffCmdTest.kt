@@ -12,9 +12,7 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import java.nio.file.Files
 
-/**
- * Tests for the DiffCmd functionality - verifies diff operations between commits.
- */
+/** Tests for diff between commits and working directory. */
 class DiffCmdTest :
     StringSpec({
 
@@ -71,7 +69,6 @@ class DiffCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create the first commit with a file
             val file = tmp.resolve("deleted.txt")
             Files.writeString(file, "to be deleted")
             val blobId = FsObjectStore.writeBlob(repo, file)
@@ -79,8 +76,6 @@ class DiffCmdTest :
             CommitCmd { repo }.test(arrayOf("-m", "Add file"))
             val commit1 = Files.readString(repo.refsHeads.resolve("master")).trim()
 
-            // Create a second commit without the file by just committing an empty index
-            // First, delete the index file to start fresh
             val indexPath = repo.meta.resolve("index")
             if (Files.exists(indexPath)) {
                 Files.delete(indexPath)

@@ -12,6 +12,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import java.nio.file.Files
 
+/** Tests for branch management. */
 class BranchCmdTest :
     StringSpec({
 
@@ -32,7 +33,6 @@ class BranchCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create a commit so the branch exists
             val file = tmp.resolve("test.txt")
             Files.writeString(file, "content")
             val blobId = FsObjectStore.writeBlob(repo, file)
@@ -51,21 +51,18 @@ class BranchCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create an initial commit
             val file = tmp.resolve("test.txt")
             Files.writeString(file, "content")
             val blobId = FsObjectStore.writeBlob(repo, file)
             Index.update(repo, "test.txt", blobId)
             CommitCmd { repo }.test(arrayOf("-m", "initial"))
 
-            // Create a new branch
             val cmd = BranchCmd { repo }
             val result = cmd.test(arrayOf("feature"))
 
             result.statusCode shouldBe 0
             result.stdout shouldContain "Created branch 'feature'"
 
-            // Verify branch exists
             Refs.branchExists(repo, "feature") shouldBe true
         }
 
@@ -74,17 +71,14 @@ class BranchCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create an initial commit
             val file = tmp.resolve("test.txt")
             Files.writeString(file, "content")
             val blobId = FsObjectStore.writeBlob(repo, file)
             Index.update(repo, "test.txt", blobId)
             CommitCmd { repo }.test(arrayOf("-m", "initial"))
 
-            // Create branch
             BranchCmd { repo }.test(arrayOf("feature"))
 
-            // Try to create the same branch again
             val result = BranchCmd { repo }.test(arrayOf("feature"))
 
             result.statusCode shouldBe 1
@@ -96,21 +90,18 @@ class BranchCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create an initial commit
             val file = tmp.resolve("test.txt")
             Files.writeString(file, "content")
             val blobId = FsObjectStore.writeBlob(repo, file)
             Index.update(repo, "test.txt", blobId)
             CommitCmd { repo }.test(arrayOf("-m", "initial"))
 
-            // Create and delete branch
             BranchCmd { repo }.test(arrayOf("feature"))
             val result = BranchCmd { repo }.test(arrayOf("-d", "feature"))
 
             result.statusCode shouldBe 0
             result.stdout shouldContain "Deleted branch 'feature'"
 
-            // Verify the branch is gone
             Refs.branchExists(repo, "feature") shouldBe false
         }
 
@@ -119,14 +110,12 @@ class BranchCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create an initial commit
             val file = tmp.resolve("test.txt")
             Files.writeString(file, "content")
             val blobId = FsObjectStore.writeBlob(repo, file)
             Index.update(repo, "test.txt", blobId)
             CommitCmd { repo }.test(arrayOf("-m", "initial"))
 
-            // Try to delete the current branch
             val result = BranchCmd { repo }.test(arrayOf("-d", "master"))
 
             result.statusCode shouldBe 1
@@ -138,14 +127,12 @@ class BranchCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create an initial commit
             val file = tmp.resolve("test.txt")
             Files.writeString(file, "content")
             val blobId = FsObjectStore.writeBlob(repo, file)
             Index.update(repo, "test.txt", blobId)
             CommitCmd { repo }.test(arrayOf("-m", "initial"))
 
-            // Create multiple branches
             BranchCmd { repo }.test(arrayOf("zebra"))
             BranchCmd { repo }.test(arrayOf("alpha"))
             BranchCmd { repo }.test(arrayOf("beta"))
@@ -154,7 +141,6 @@ class BranchCmdTest :
 
             result.statusCode shouldBe 0
 
-            // Should be sorted alphabetically
             val lines =
                 result.stdout.lines().filter {
                     it.contains("alpha") || it.contains("beta") ||

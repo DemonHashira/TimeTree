@@ -8,9 +8,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import java.nio.file.Files
 
-/**
- * Tests for the InitCmd functionality - verifies repository initialization.
- */
+/** Tests for repository initialization. */
 class InitCmdTest :
     StringSpec({
 
@@ -23,7 +21,6 @@ class InitCmdTest :
             result.statusCode shouldBe 0
             result.stdout shouldContain "Initialized TimeTree repo"
 
-            // Verify the repository structure was created
             Files.isDirectory(repoLayout.meta) shouldBe true
             Files.isDirectory(repoLayout.objects) shouldBe true
             Files.isDirectory(repoLayout.refsHeads) shouldBe true
@@ -36,12 +33,10 @@ class InitCmdTest :
             val repoLayout = RepoLayout(tempDir.toPath())
             val cmd = InitCmd { repoLayout }
 
-            // First init
             val first = cmd.test(argv = emptyArray())
             first.statusCode shouldBe 0
             first.stdout shouldContain "Initialized TimeTree repo"
 
-            // Second init - should detect an existing repository
             val second = cmd.test(argv = emptyArray())
             second.statusCode shouldBe 0
             second.stdout shouldContain "Reinitialized existing TimeTree repository"
@@ -51,7 +46,6 @@ class InitCmdTest :
             val tempDir = tempdir()
             val repoLayout = RepoLayout(tempDir.toPath())
 
-            // Create .timetree as a regular file (not a directory)
             Files.writeString(repoLayout.meta, "I'm a file, not a directory!")
 
             val result = InitCmd(repoProvider = { repoLayout }).test(argv = emptyArray())
@@ -64,7 +58,6 @@ class InitCmdTest :
             val tempDir = tempdir()
             val repoLayout = RepoLayout(tempDir.toPath())
 
-            // Make the directory read-only
             tempDir.setWritable(false)
 
             try {
@@ -73,7 +66,6 @@ class InitCmdTest :
                 result.statusCode shouldBe 1
                 result.stderr shouldContain "No write permission"
             } finally {
-                // Restore write permissions for cleanup
                 tempDir.setWritable(true)
             }
         }
@@ -82,7 +74,6 @@ class InitCmdTest :
             val tempDir = tempdir()
             val repoLayout = RepoLayout(tempDir.toPath())
 
-            // Create .timetree directory but make object path a file to trigger IOException
             Files.createDirectories(repoLayout.meta)
             Files.writeString(repoLayout.objects, "blocking file")
 
@@ -96,7 +87,6 @@ class InitCmdTest :
             val tempDir = tempdir()
             val repoLayout = RepoLayout(tempDir.toPath())
 
-            // Create only .timetree and objects, but not refs/heads or HEAD
             Files.createDirectories(repoLayout.objects)
 
             val result = InitCmd(repoProvider = { repoLayout }).test(argv = emptyArray())
@@ -104,7 +94,6 @@ class InitCmdTest :
             result.statusCode shouldBe 0
             result.stdout shouldContain "Initialized TimeTree repo"
 
-            // Verify repair created missing components
             Files.isDirectory(repoLayout.refsHeads) shouldBe true
             Files.exists(repoLayout.head) shouldBe true
         }
