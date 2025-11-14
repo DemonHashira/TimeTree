@@ -1,65 +1,127 @@
 # TimeTree
 
-TimeTree is a Kotlin CLI application that version-controls any directory by storing content-addressable blob and tree objects in a hidden .timetree/ folder. It supports init, add, commit, log, diff (Myers LCS), checkout, branch management (branch, checkout <branch>, branch -l), status for inspecting uncommitted changes, and optional rolling-checksum delta storage for large files. Under the hood, each commit creates an immutable snapshot graph via SHA-1–style hashes—identical blobs and subtrees are stored only once—while an index-based staging area enables selective tracking. Its modular Kotlin design leverages Clikt for concise command definitions, coroutines for parallel hashing and delta computations, and clean separation of object storage, diff engine, and CLI processing into cohesive packages. Built in pure Kotlin on the JVM with zero external dependencies, TimeTree scales to thousands of files with near-interactive performance. Core algorithms implemented from scratch include a
-custom SHA-1–style hash for content addressing, the Myers Longest Common Subsequence algorithm for line-by-line diffs, and an rsync-inspired rolling-checksum method for binary delta generation and application.
+A lightweight version control system built in Kotlin, implementing Git's core concepts from scratch.
+
+## Features
+
+- **Core VCS Commands**: `init`, `add`, `commit`, `status`, `log`, `diff`, `branch`, `checkout`
+- **Content-Addressable Storage**: SHA-1 hashing for efficient deduplication
+- **Delta Compression**: Rsync-inspired rolling checksum for large files
+- **Line-by-Line Diffs**: Myers algorithm for readable change tracking
+- **Pure Kotlin**: Zero external dependencies, runs on any JVM
+
+## Quick Start
+
+```bash
+# Initialize a repository
+timetree init
+
+# Stage files
+timetree add file.txt
+
+# Create a commit
+timetree commit -m "Initial commit"
+
+# View history
+timetree log
+
+# Check status
+timetree status
+```
 
 ## Installation
 
 ### Linux and macOS
 
-To install TimeTree system-wide (so you can use `timetree` and `tt` commands from anywhere):
-
 ```bash
 ./scripts/install.sh
 ```
 
-### Windows
+Installs to `/usr/local/bin`, `~/.local/bin`, or `~/bin`
 
-Run the PowerShell installation script:
+### Windows
 
 ```powershell
 .\scripts\install.ps1
 ```
 
-**Note**: If you get an execution policy error, run:
+Installs to `%LOCALAPPDATA%\TimeTree\bin`
+
+**Note**: If you get an execution policy error:
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
-Then try the install script again.
 
-The installation scripts will:
-1. Build the TimeTree shadow JAR
-2. Create the `tt` wrapper script
-3. Install both `timetree` and `tt` commands to a directory in your PATH
+## Commands
 
-**Linux/macOS**: Installs to `/usr/local/bin`, `~/.local/bin`, or `~/bin`  
-**Windows**: Installs to `%LOCALAPPDATA%\TimeTree\bin`
+| Command | Description |
+|---------|-------------|
+| `init` | Initialize a new repository |
+| `add <file>` | Stage files for commit |
+| `commit -m "msg"` | Create a commit |
+| `status` | Show working tree status |
+| `log` | Display commit history |
+| `diff <commit1> <commit2>` | Show differences |
+| `branch <name>` | Create a branch |
+| `branch -l` | List branches |
+| `branch -d <name>` | Delete a branch |
+| `checkout <branch>` | Switch branches |
+| `checkout -b <name>` | Create and switch to branch |
 
-If the installation directory is not in your PATH, the script will tell you how to add it.
+**Alias**: Use `tt` instead of `timetree` for shorter commands.
 
-**Note for Windows users**: After installation, you may need to restart your terminal for PATH changes to take effect.
+## How It Works
+
+TimeTree stores your project history in a `.timetree/` directory:
+
+- **Objects**: Content-addressable blobs and trees (SHA-1 hashed)
+- **Refs**: Branch pointers and HEAD reference
+- **Index**: Staging area for commits
+- **Commits**: Immutable snapshots with parent links
+
+Each commit creates a snapshot of your entire project. Identical files are stored only once thanks to content addressing.
+
+## Algorithms Implemented
+
+- **SHA-1 Hashing**: Custom implementation for content addressing
+- **Myers Diff**: Longest Common Subsequence for line-by-line diffs
+- **Rsync Delta**: Rolling checksum for binary delta compression
 
 ## Uninstallation
 
-### Linux and macOS
-
-To remove TimeTree:
-
+**Linux/macOS:**
 ```bash
 ./scripts/uninstall.sh
 ```
 
-### Windows
-
-**PowerShell:**
+**Windows (PowerShell):**
 ```powershell
 .\scripts\uninstall.ps1
 ```
 
-**Command Prompt:**
+**Windows (Command Prompt):**
 ```cmd
 .\scripts\uninstall.bat
 ```
 
-This will remove the `timetree`, `timetree.jar`, and `tt` files from the installation directory.
+## Building from Source
+
+```bash
+./gradlew shadowJar
+```
+
+The JAR will be in `build/libs/timetree.jar`
+
+## Testing
+
+```bash
+./gradlew test
+```
+
+**Test Coverage**: 75% with comprehensive integration tests
+
+## License
+
+See [LICENSE](LICENSE) file.
+
 
