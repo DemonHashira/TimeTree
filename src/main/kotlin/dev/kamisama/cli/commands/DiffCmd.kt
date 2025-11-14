@@ -39,7 +39,7 @@ class DiffCmd(
         help = "Compare staged changes with HEAD",
     ).flag(default = false)
 
-    override fun help(context: Context) = "Show line-level changes between commits, trees, or working directory"
+    override fun help(context: Context) = "Show file differences"
 
     override fun run() {
         val repo = repoProvider()

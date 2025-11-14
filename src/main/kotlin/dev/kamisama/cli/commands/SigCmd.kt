@@ -22,7 +22,7 @@ class SigCmd : CliktCommand(name = "sig") {
     private val output by option("-o", "--output")
     private val blockSize by option("-b", "--block-size").int().default(8192)
 
-    override fun help(context: Context) = "Generate a signature for a basis file"
+    override fun help(context: Context) = "Generate signature for delta compression"
 
     override fun run() {
         if (blockSize < 64 || blockSize > 1024 * 1024) {

@@ -19,7 +19,7 @@ class CheckoutCmd(
     private val target by argument(name = "branch-or-commit", help = "Branch name or commit ID to checkout")
     private val createBranch by option("-b", help = "Create and checkout a new branch").flag(default = false)
 
-    override fun help(context: Context) = "Switch branches or checkout commits"
+    override fun help(context: Context) = "Switch to a branch or commit"
 
     override fun run() {
         val repo = repoProvider()

@@ -20,7 +20,7 @@ class AddCmd(
 ) : CliktCommand(name = "add") {
     private val inputs by argument(name = "path").multiple()
 
-    override fun help(context: Context) = "Add file contents to the index"
+    override fun help(context: Context) = "Stage files for commit"
 
     override fun run() {
         val repo = repoProvider()

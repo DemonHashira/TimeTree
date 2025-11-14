@@ -19,7 +19,7 @@ class LogCmd(
     private val all by option("--all", help = "Show all commits from all branches")
         .flag(default = false)
 
-    override fun help(context: Context) = "Show commit history"
+    override fun help(context: Context) = "Display commit history"
 
     override fun run() {
         val repo = repoProvider()

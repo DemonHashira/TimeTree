@@ -18,7 +18,7 @@ class DeltaCmd : CliktCommand(name = "delta") {
     private val target by argument()
     private val output by option("-o", "--output")
 
-    override fun help(context: Context) = "Generate a delta from a signature and target file"
+    override fun help(context: Context) = "Create delta from signature and target"
 
     override fun run() {
         val outputPath = output ?: "$target.delta"

@@ -19,7 +19,7 @@ class InitCmd(
     // Default branch name for newly initialized repositories
     private val defaultBranch = "master"
 
-    override fun help(context: Context) = "Initialize a new TimeTree repository in the current directory"
+    override fun help(context: Context) = "Create a new TimeTree repository"
 
     override fun run() {
         val repo = repoProvider()

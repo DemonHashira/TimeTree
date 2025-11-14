@@ -18,7 +18,7 @@ class HashObjectCmd :
     ) {
     private val path by argument("path")
 
-    override fun help(context: Context) = "Print object id (git-style vs TimeTree) for a file"
+    override fun help(context: Context) = "Compute object hash for a file"
 
     override fun run() {
         val p = Paths.get(path)

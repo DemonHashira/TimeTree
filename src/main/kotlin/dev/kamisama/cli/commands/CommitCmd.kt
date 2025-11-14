@@ -24,7 +24,7 @@ class CommitCmd(
     private val authorName by option("--author-name").default(System.getProperty("user.name", "User"))
     private val authorEmail by option("--author-email").default("v.logodazhki@outlook.com")
 
-    override fun help(context: Context) = "Record a snapshot of the staged changes"
+    override fun help(context: Context) = "Save staged changes to repository"
 
     override fun run() {
         val repo = repoProvider()

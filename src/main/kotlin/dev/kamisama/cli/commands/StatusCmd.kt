@@ -10,7 +10,7 @@ import dev.kamisama.core.status.Status
 class StatusCmd(
     private val repoProvider: () -> RepoLayout = RepoLayout::fromWorkingDir,
 ) : CliktCommand(name = "status") {
-    override fun help(context: Context) = "Show the working tree status"
+    override fun help(context: Context) = "Show changed and untracked files"
 
     override fun run() {
         val repo = repoProvider()

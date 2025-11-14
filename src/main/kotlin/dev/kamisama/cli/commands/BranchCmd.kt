@@ -19,7 +19,7 @@ class BranchCmd(
     private val delete by option("-d", "--delete", help = "Delete a branch").flag(default = false)
     private val list by option("-l", "--list", help = "List all branches").flag(default = false)
 
-    override fun help(context: Context) = "List, create, or delete branches"
+    override fun help(context: Context) = "Manage branches"
 
     override fun run() {
         val repo = repoProvider()

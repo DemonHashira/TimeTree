@@ -19,7 +19,7 @@ class PatchCmd : CliktCommand(name = "patch") {
     private val deltaFile by argument()
     private val output by option("-o", "--output").default("reconstructed.bin")
 
-    override fun help(context: Context) = "Apply a delta to a basis file to reconstruct the target"
+    override fun help(context: Context) = "Apply delta to reconstruct file"
 
     override fun run() {
         val basisPath = Paths.get(basis)
