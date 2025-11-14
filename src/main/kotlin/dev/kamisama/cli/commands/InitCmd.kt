@@ -10,13 +10,11 @@ import java.io.IOException
 import java.nio.file.Files
 
 /**
- * The command that initializes a new TimeTree repository.
+ * Command to initialize a new TimeTree repository.
  */
 class InitCmd(
-    // Provider function for repository layout, defaults to the current working directory
     private val repoProvider: () -> RepoLayout = RepoLayout::fromWorkingDir,
 ) : CliktCommand(name = "init") {
-    // Default branch name for newly initialized repositories
     private val defaultBranch = "master"
 
     override fun help(context: Context) = "Create a new TimeTree repository"
@@ -24,7 +22,6 @@ class InitCmd(
     override fun run() {
         val repo = repoProvider()
 
-        // Validate preconditions before attempting initialization
         if (Files.exists(repo.meta) && !Files.isDirectory(repo.meta)) {
             echo("${Color.red("Error:")} ${repo.meta} exists but is not a directory", err = true)
             throw ProgramResult(1)
@@ -36,10 +33,8 @@ class InitCmd(
         }
 
         try {
-            // Initialize or repair the repository
             val created = ensureInitialized(repo, defaultBranch)
 
-            // Provide appropriate feedback
             if (created) {
                 echo("Initialized TimeTree repo in ${repo.meta}")
             } else {

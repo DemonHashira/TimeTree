@@ -7,7 +7,7 @@ import java.io.InputStream
 import java.io.OutputStream
 
 /**
- * Binary serialization for Delta files.
+ * Serialization for Delta objects to binary format.
  */
 object DeltaIO {
     private val MAGIC = byteArrayOf('T'.code.toByte(), 'T'.code.toByte(), 'D'.code.toByte(), 'L'.code.toByte(), 0x01)
@@ -17,9 +17,7 @@ object DeltaIO {
     private const val MAX_OPS = 10_000_000
     private const val MAX_INSERT_LENGTH = 100 * 1024 * 1024
 
-    /**
-     * Write a delta to an output stream.
-     */
+    /** Writes delta to the output stream in binary format. */
     fun write(
         delta: Delta,
         out: OutputStream,
@@ -45,9 +43,7 @@ object DeltaIO {
         }
     }
 
-    /**
-     * Read a delta from an input stream.
-     */
+    /** Reads delta from input stream. */
     fun read(input: InputStream): Delta {
         val magic = BinaryIO.readBytes(input, 5)
         if (!magic.contentEquals(MAGIC)) {

@@ -1,7 +1,7 @@
 package dev.kamisama.cli
 
 /**
- * Utility for adding ANSI color codes to terminal output, similar to git.
+ * ANSI color formatting for terminal output.
  */
 object Color {
     /**

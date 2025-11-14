@@ -6,14 +6,16 @@ import java.io.OutputStream
 import java.nio.file.Path
 
 /**
- * Delta operation: either copy from a basis or insert new data.
+ * Delta operation for reconstructing files.
  */
 sealed class DeltaOp {
+    /** Copy bytes from a basis file at offset. */
     data class Copy(
         val offset: Long,
         val length: Int,
     ) : DeltaOp()
 
+    /** Insert new data bytes. */
     data class Insert(
         val data: ByteArray,
     ) : DeltaOp() {
@@ -28,53 +30,38 @@ sealed class DeltaOp {
 }
 
 /**
- * Delta describes how to reconstruct a target file from a basis file.
+ * Delta describes reconstruction from basis to target.
  */
 data class Delta(
     val blockSize: Int,
     val ops: List<DeltaOp>,
 )
 
-/**
- * Signature of a single block in the basis file.
- */
+/** Block signature with weak and strong checksums. */
 data class BlockSignature(
     val index: Int,
     val weak: Int,
     val strong: ObjectId,
 )
 
-/**
- * Complete signature of a basis file for delta generation.
- */
+/** Complete signature of a basis file. */
 data class Signature(
     val blockSize: Int,
     val blocks: List<BlockSignature>,
 )
 
-/**
- * Interface for the rsync-style delta algorithm.
- */
+/** Interface for rsync-style delta algorithm. */
 interface DeltaAlgorithm {
-    /**
-     * Generate a signature for a basis file.
-     */
     fun makeSignature(
         basis: InputStream,
         blockSize: Int = 8192,
     ): Signature
 
-    /**
-     * Generate a delta by comparing a target against a signature.
-     */
     fun makeDelta(
         target: InputStream,
         sig: Signature,
     ): Delta
 
-    /**
-     * Apply a delta to a basis file to reconstruct the target.
-     */
     fun applyDelta(
         basisPath: Path,
         delta: Delta,

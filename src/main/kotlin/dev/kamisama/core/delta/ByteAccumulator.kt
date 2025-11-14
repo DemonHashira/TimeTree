@@ -3,8 +3,7 @@ package dev.kamisama.core.delta
 import java.io.ByteArrayOutputStream
 
 /**
- * Efficient unboxed byte accumulator for building INSERT operations.
- * Avoids per-byte boxing and reduces GC pressure.
+ * Efficient byte buffer for building INSERT operations in delta encoding.
  */
 class ByteAccumulator(
     initialCapacity: Int = 1024,

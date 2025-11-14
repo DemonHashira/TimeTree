@@ -15,6 +15,7 @@ import dev.kamisama.cli.commands.PatchCmd
 import dev.kamisama.cli.commands.SigCmd
 import dev.kamisama.cli.commands.StatusCmd
 
+/** Registers all available CLI commands. */
 object CommandRouter {
     fun build(): CliktCommand =
         TimeTreeCli()

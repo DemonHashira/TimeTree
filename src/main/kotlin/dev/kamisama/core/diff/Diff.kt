@@ -6,12 +6,10 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 
 /**
- * Provides diff functionality for comparing blobs, trees, and commits.
+ * Provides diff functionality for blobs, trees, and commits.
  */
 object Diff {
-    /**
-     * Represents a file change in a tree diff.
-     */
+    /** Represents a file change in tree diff. */
     sealed class FileChange {
         data class Added(
             val path: String,
@@ -30,9 +28,7 @@ object Diff {
         ) : FileChange()
     }
 
-    /**
-     * Compare two blobs and return a unified diff.
-     */
+    /** Compares two blobs and returns a unified diff string. */
     fun diffBlobs(
         repo: RepoLayout,
         oldBlobId: ObjectId?,
@@ -74,9 +70,7 @@ object Diff {
         }
     }
 
-    /**
-     * Build a diff header for a file change.
-     */
+    /** Builds a diff header with file mode and hash info. */
     private fun buildDiffHeader(
         path: String,
         oldBlobId: ObjectId?,
@@ -96,9 +90,7 @@ object Diff {
             }
         }
 
-    /**
-     * Compare two trees and return a list of file changes.
-     */
+    /** Compares two trees and returns a list of file changes. */
     fun diffTrees(
         repo: RepoLayout,
         oldTreeId: ObjectId?,
@@ -130,9 +122,7 @@ object Diff {
         return changes
     }
 
-    /**
-     * Compare two commits and return a unified diff of all changes.
-     */
+    /** Compares two commits and returns a unified diff of all changes. */
     fun diffCommits(
         repo: RepoLayout,
         oldCommitId: ObjectId?,
@@ -177,9 +167,7 @@ object Diff {
         return result.toString()
     }
 
-    /**
-     * Read a blob and return its contents as lines.
-     */
+    /** Reads blob content as lines for diff comparison. */
     private fun readBlobAsLines(
         repo: RepoLayout,
         blobId: ObjectId,
@@ -193,9 +181,7 @@ object Diff {
         }
     }
 
-    /**
-     * Read a blob and return its raw content as a string.
-     */
+    /** Reads blob content as UTF-8 string. */
     private fun readBlob(
         repo: RepoLayout,
         blobId: ObjectId,
@@ -214,9 +200,7 @@ object Diff {
         }
     }
 
-    /**
-     * Check if a blob contains binary data.
-     */
+    /** Checks if the blob contains binary data (null bytes). */
     private fun isBinary(
         repo: RepoLayout,
         blobId: ObjectId,
@@ -240,9 +224,7 @@ object Diff {
         return false
     }
 
-    /**
-     * Parse a tree object and return a map of the path-> blob ID.
-     */
+    /** Parses tree object recursively into path->blob map. */
     fun parseTree(
         repo: RepoLayout,
         treeId: ObjectId,
@@ -284,9 +266,7 @@ object Diff {
         return result
     }
 
-    /**
-     * Read a commit and return its tree ID.
-     */
+    /** Extracts tree ID from a commit object. */
     fun readCommitTree(
         repo: RepoLayout,
         commitId: ObjectId,

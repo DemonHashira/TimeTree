@@ -5,10 +5,9 @@ import java.nio.charset.StandardCharsets
 enum class ObjectType { BLOB, TREE, COMMIT }
 
 /**
- * Generates namespaced object headers to prevent hash collisions with Git objects.
+ * Generates namespaced object headers for domain separation from Git.
  */
 object ObjectHeaders {
-    // TimeTree namespace prefix for domain separation from Git
     private const val NS = "timetree:v1"
 
     fun header(

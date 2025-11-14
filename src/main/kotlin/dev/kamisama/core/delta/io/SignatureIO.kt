@@ -7,14 +7,12 @@ import java.io.InputStream
 import java.io.OutputStream
 
 /**
- * Binary serialization for Signature files.
+ * Serialization for Signature objects to binary format.
  */
 object SignatureIO {
     private val MAGIC = byteArrayOf('T'.code.toByte(), 'T'.code.toByte(), 'S'.code.toByte(), 'G'.code.toByte(), 0x01)
 
-    /**
-     * Write a signature to an output stream.
-     */
+    /** Writes signature to the output stream. */
     fun write(
         sig: Signature,
         out: OutputStream,
@@ -30,9 +28,7 @@ object SignatureIO {
         }
     }
 
-    /**
-     * Read a signature from an input stream.
-     */
+    /** Reads signature from the input stream. */
     fun read(input: InputStream): Signature {
         val magic = BinaryIO.readBytes(input, 5)
         if (!magic.contentEquals(MAGIC)) {

@@ -11,75 +11,53 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 /**
- * Checkout functionality for switching branches or commits.
+ * Handles checkout of branches and commits.
  */
 object Checkout {
-    /**
-     * Checkout a branch or commit.
-     * This updates HEAD, index, and working tree.
-     */
+    /** Switches to a branch by updating HEAD, index, and working tree. */
     fun checkoutBranch(
         repo: RepoLayout,
         branchName: String,
     ) {
-        // Check if a branch exists
         if (!Refs.branchExists(repo, branchName)) {
             throw IllegalArgumentException("Branch '$branchName' does not exist")
         }
 
-        // Get the commit ID for this branch
         val commitId =
             Refs.getBranchCommit(repo, branchName)
                 ?: throw IllegalStateException("Branch '$branchName' exists but has no commit")
 
-        // Check if we're already on this branch
         val head = Refs.readHead(repo)
         if (head.currentBranch() == branchName) {
-            // Already on this branch, nothing to do
             return
         }
 
-        // Update HEAD to point to the branch
         Refs.ensureHeadOn(repo, "refs/heads/$branchName")
-
-        // Update the working tree and index to match the target commit
         updateWorkingTreeToCommit(repo, commitId)
     }
 
-    /**
-     * Checkout a specific commit (detached HEAD).
-     */
+    /** Checks out a specific commit in a detached HEAD state. */
     fun checkoutCommit(
         repo: RepoLayout,
         commitId: ObjectId,
     ) {
-        // Update HEAD to point directly to the commit (detached state)
         val headPath = repo.head
         Files.writeString(headPath, "${commitId.toHex()}\n", StandardCharsets.UTF_8)
-
-        // Update the working tree and index to match the commit
         updateWorkingTreeToCommit(repo, commitId)
     }
 
-    /**
-     * Update the working tree and index to match a commit.
-     */
+    /** Updates working tree and index to match a commit. */
     private fun updateWorkingTreeToCommit(
         repo: RepoLayout,
         commitId: ObjectId,
     ) {
-        // Read the commit to get its tree
         val treeId =
             Diff.readCommitTree(repo, commitId)
                 ?: throw IllegalStateException("Commit ${commitId.toHex()} missing 'tree' header")
 
-        // Read the tree to get all file entries
         val treeEntries = Diff.parseTree(repo, treeId, "")
-
-        // Clear the current working tree (except .timetree)
         clearWorkingTree(repo)
 
-        // Write all files from the tree to the working directory
         val (root, _) = repo.normalizedPaths()
         for ((path, blobId) in treeEntries) {
             val filePath = root.resolve(path)
@@ -89,13 +67,10 @@ object Checkout {
             }
         }
 
-        // Update the index to match the tree
         updateIndexFromTree(repo, treeEntries)
     }
 
-    /**
-     * Clear the working tree (except .timetree directory).
-     */
+    /** Removes all files from the working tree except .timetree. */
     private fun clearWorkingTree(repo: RepoLayout) {
         val (root, meta) = repo.normalizedPaths()
         val directoriesToRemove = mutableListOf<Path>()
@@ -113,7 +88,6 @@ object Checkout {
             }
         }
 
-        // Remove directories in reverse order
         directoriesToRemove.sortedDescending().forEach {
             try {
                 Files.delete(it)
@@ -123,20 +97,16 @@ object Checkout {
         }
     }
 
-    /**
-     * Update the index to match tree entries.
-     */
+    /** Replaces index with tree entries from a commit. */
     private fun updateIndexFromTree(
         repo: RepoLayout,
         treeEntries: Map<String, ObjectId>,
     ) {
-        // Clear the current index by creating a new empty one
         val indexPath = repo.meta.resolve("index")
         if (Files.exists(indexPath)) {
             Files.delete(indexPath)
         }
 
-        // Add all tree entries to the index
         for ((path, blobId) in treeEntries) {
             Index.update(repo, path, blobId)
         }

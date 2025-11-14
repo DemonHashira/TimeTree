@@ -1,8 +1,7 @@
 package dev.kamisama.core.delta
 
 /**
- * Circular ring buffer for O(1) sliding window operations.
- * Avoids per-byte array shifts in the hot path.
+ * Ring buffer for efficient sliding window operations in delta encoding.
  */
 class RingBuffer(
     private val capacity: Int,
@@ -39,10 +38,7 @@ class RingBuffer(
         head = 0
     }
 
-    /**
-     * Materialize a contiguous view of the ring buffer contents.
-     * Only used when computing strong checksums on match candidates.
-     */
+    /** Materializes ring buffer as a contiguous array for strong checksum. */
     fun toByteArray(): ByteArray {
         val result = ByteArray(size)
         for (i in 0 until size) {

@@ -1,9 +1,7 @@
 package dev.kamisama.core.hash
 
 /**
- * Hand-rolled SHA-1 (FIPS 180-4) with incremental update().
- * - 512-bit blocks, big-endian words
- * - 160-bit state (H0..H4)
+ * SHA-1 hash implementation with incremental updates.
  */
 class Sha1 : Sha1Like {
     // State H0..H4 (32-bit words)
@@ -31,7 +29,7 @@ class Sha1 : Sha1Like {
         var i = off
         var remaining = len
 
-        // If the buffer has partial, fill it first
+        // If the buffer has partial data, fill it first
         if (blockLen > 0) {
             val need = 64 - blockLen
             val take = minOf(need, remaining)
@@ -45,7 +43,7 @@ class Sha1 : Sha1Like {
             }
         }
 
-        // Process full blocks directly from input
+        // Process full blocks from input
         while (remaining >= 64) {
             processBlock(data, i)
             i += 64
@@ -70,7 +68,7 @@ class Sha1 : Sha1Like {
         val lenPos = padLen - 8
         writeLongBE(totalBits, pad, lenPos)
 
-        update(pad, 0, pad.size) // this will flush final blocks
+        update(pad, 0, pad.size)
 
         // Produce digest (big-endian words)
         val out = ByteArray(20)
@@ -82,7 +80,6 @@ class Sha1 : Sha1Like {
 
         // Reset to prevent hashing the final state
         reset()
-
         return ObjectId.from(out)
     }
 
@@ -97,7 +94,7 @@ class Sha1 : Sha1Like {
     }
 
     private fun paddingLength(currLen: Int): Int {
-        // We need to append 1 byte (0x80), then zeros, then 8 length bytes,
+        // Append 1 byte (0x80), then zeros, then 8 length bytes,
         // making the total% 64 == 0.
         val base = currLen + 1 + 8
         val rem = base % 64

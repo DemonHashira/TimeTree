@@ -4,18 +4,14 @@ import dev.kamisama.core.fs.RepoLayout
 import java.nio.file.Files
 
 /**
- * Utility functions.
+ * CLI helper utilities for validation and checks.
  */
 object CliUtils {
-    /**
-     * Validates that the given repository layout represents a valid TimeTree repository.
-     */
+    /** Ensures the repository is initialized or throws an error. */
     fun requireRepository(repo: RepoLayout) {
         require(Files.isDirectory(repo.meta)) { "Not a TimeTree repository (no .timetree directory)" }
     }
 
-    /**
-     * Validates a branch name according to TimeTree rules.
-     */
+    /** Checks if the branch name follows naming rules (no slashes or spaces). */
     fun isValidBranchName(name: String): Boolean = name.isNotEmpty() && !name.contains('/') && !name.contains(' ')
 }

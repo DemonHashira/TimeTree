@@ -10,16 +10,15 @@ import java.nio.file.StandardOpenOption
 import java.util.Collections
 
 /**
- * Manages the repository index - a mapping of file paths to their object IDs.
- * On-disk format: "<40-hex> <relative-path>\n" per line.
+ * Manages repository index mapping file paths to object IDs.
  */
 object Index {
     private const val FILE_NAME = "index"
 
-    /** Public read-only view for callers (CLI, core logic). */
+    /** Returns immutable view of index entries. */
     fun load(repo: RepoLayout): Map<String, ObjectId> = Collections.unmodifiableMap(loadMutable(repo))
 
-    /** Internal mutable loader for update workflows. */
+    /** Loads mutable index for update operations. */
     internal fun loadMutable(repo: RepoLayout): MutableMap<String, ObjectId> {
         val p = indexPath(repo)
         if (!Files.exists(p)) return linkedMapOf()
@@ -37,9 +36,7 @@ object Index {
         return out
     }
 
-    /**
-     * Add or update a single entry; writes atomically.
-     */
+    /** Atomically adds or updates a single index entry. */
     fun update(
         repo: RepoLayout,
         path: String,
@@ -52,9 +49,7 @@ object Index {
 
     private fun indexPath(repo: RepoLayout): Path = repo.meta.resolve(FILE_NAME)
 
-    /**
-     * Persist entries atomically; keys written in sorted order for determinism.
-     */
+    /** Persists entries atomically in sorted order. */
     private fun save(
         repo: RepoLayout,
         entries: Map<String, ObjectId>,
@@ -71,7 +66,6 @@ object Index {
                 .append('\n')
         }
 
-        // Atomically write: write to temp, then move.
         val tmp = p.resolveSibling("${p.fileName}.tmp")
         Files.writeString(
             tmp,

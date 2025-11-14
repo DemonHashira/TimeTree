@@ -3,7 +3,7 @@ package dev.kamisama.core.delta
 import java.util.ArrayDeque
 
 /**
- * Tridgell/rsync-style rolling checksum using Adler-like sums modulo 2^16.
+ * Adler-style rolling checksum for rsync delta encoding.
  */
 class RsyncRoller(
     private val blockSize: Int,
@@ -12,9 +12,7 @@ class RsyncRoller(
     private var b: Int = 0
     private val window = ArrayDeque<Byte>(blockSize)
 
-    /**
-     * Initialize the rolling checksum with the first block.
-     */
+    /** Initializes checksum with the first block of data. */
     fun init(
         block: ByteArray,
         off: Int,
@@ -32,9 +30,7 @@ class RsyncRoller(
         }
     }
 
-    /**
-     * Roll the window by one byte: remove oldest, add newest.
-     */
+    /** Updates checksum by rolling window one byte forward. */
     fun roll(inByte: Byte) {
         val inVal = inByte.toInt() and 0xFF
 
@@ -52,13 +48,8 @@ class RsyncRoller(
         window.addLast(inByte)
     }
 
-    /**
-     * Get the current weak checksum as a 32-bit integer.
-     */
+    /** Returns current weak checksum. */
     fun weak(): Int = (b shl 16) or a
 
-    /**
-     * Get the current window size.
-     */
     fun size(): Int = window.size
 }

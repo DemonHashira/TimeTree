@@ -1,12 +1,10 @@
 package dev.kamisama.core.diff
 
 /**
- * Myers O(ND) algorithm for computing the shortest edit script between two sequences.
+ * Myers O(ND) diff algorithm for computing the shortest edit script.
  */
 object Myers {
-    /**
-     * A single edit operation.
-     */
+    /** Single edit operation. */
     sealed class Edit {
         data class Keep(
             val line: String,
@@ -21,9 +19,7 @@ object Myers {
         ) : Edit()
     }
 
-    /**
-     * Records a position reached during the forward pass for backtracking.
-     */
+    /** Records position during the forward pass for backtracking. */
     private data class Step(
         val k: Int,
         val x: Int,
@@ -33,9 +29,7 @@ object Myers {
         val prevY: Int,
     )
 
-    /**
-     * Computes the edit script to transform list `a` into list `b`.
-     */
+    /** Computes the edit sequence transforming list a into list b. */
     fun computeEdits(
         a: List<String>,
         b: List<String>,
@@ -101,9 +95,7 @@ object Myers {
         return emptyList()
     }
 
-    /**
-     * Reconstructs the edit script by walking backward through the trace.
-     */
+    /** Reconstructs the edit script by walking backward through trace. */
     private fun backtrack(
         a: List<String>,
         b: List<String>,
@@ -155,9 +147,7 @@ object Myers {
         return editsReversed.asReversed()
     }
 
-    /**
-     * Formats edits as a unified diff string with context lines.
-     */
+    /** Formats edits as unified diff with context lines. */
     fun formatUnifiedDiff(
         edits: List<Edit>,
         aLabel: String = "a",
@@ -202,9 +192,7 @@ object Myers {
         val bCount: Int,
     )
 
-    /**
-     * Groups edits into hunks separated by unchanged context.
-     */
+    /** Groups edits into hunks separated by unchanged context. */
     private fun groupIntoHunks(
         edits: List<Edit>,
         contextLines: Int,

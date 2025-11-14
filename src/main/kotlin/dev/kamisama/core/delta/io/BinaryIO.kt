@@ -5,12 +5,10 @@ import java.io.InputStream
 import java.io.OutputStream
 
 /**
- * Shared binary I/O utilities for delta and signature serialization.
+ * Binary I/O utilities for delta serialization.
  */
 internal object BinaryIO {
-    /**
-     * Write a 32-bit unsigned integer in big-endian format.
-     */
+    /** Writes 32-bit integer in big-endian format. */
     fun writeU32(
         out: OutputStream,
         value: Int,
@@ -21,9 +19,7 @@ internal object BinaryIO {
         out.write(value and 0xFF)
     }
 
-    /**
-     * Read a 32-bit unsigned integer in big-endian format.
-     */
+    /** Reads 32-bit integer in big-endian format. */
     fun readU32(input: InputStream): Int {
         val b0 = input.read()
         val b1 = input.read()
@@ -35,9 +31,7 @@ internal object BinaryIO {
         return (b0 shl 24) or (b1 shl 16) or (b2 shl 8) or b3
     }
 
-    /**
-     * Read exactly `count` bytes from input stream.
-     */
+    /** Reads exact byte count from the stream. */
     fun readBytes(
         input: InputStream,
         count: Int,

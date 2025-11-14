@@ -4,10 +4,7 @@ import dev.kamisama.core.hash.ObjectId
 import java.util.TreeMap
 
 /**
- * Serialize a TREE object from {path -> blobId} entries.
- * Format per entry (one per line), sorted by name within each directory:
- *   - file:  "<mode> <name>\t<hex-id>\n"   (mode: 100644 or 100755)
- *   - dir:   "040000 <name>\t<hex-id>\n"  (hex-id is the child tree id)
+ * Builds tree objects from file path->ID mappings.
  */
 object TreeBuilder {
     data class Node(
