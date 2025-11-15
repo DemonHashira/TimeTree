@@ -5,6 +5,10 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
+import io.kotest.property.Arb
+import io.kotest.property.arbitrary.list
+import io.kotest.property.arbitrary.string
+import io.kotest.property.checkAll
 
 /** Tests for Myers diff algorithm. */
 class MyersTest :
@@ -291,5 +295,49 @@ class MyersTest :
 
             val keeps = edits.filterIsInstance<Myers.Edit.Keep>()
             keeps.map { it.line } shouldBe listOf("A", "B", "C", "D", "E")
+        }
+
+        "diff is reversible - applying edits reconstructs target" {
+            checkAll(
+                Arb.list(Arb.string(0..20), 0..20),
+                Arb.list(Arb.string(0..20), 0..20),
+            ) { a, b ->
+                val edits = Myers.computeEdits(a, b)
+                val reconstructed = mutableListOf<String>()
+
+                edits.forEach { edit ->
+                    when (edit) {
+                        is Myers.Edit.Keep -> reconstructed.add(edit.line)
+                        is Myers.Edit.Insert -> reconstructed.add(edit.line)
+                        is Myers.Edit.Delete -> {}
+                    }
+                }
+
+                reconstructed shouldBe b
+            }
+        }
+
+        "diff is minimal - identical lists produce only Keep edits" {
+            checkAll(Arb.list(Arb.string(0..20), 0..50)) { lines ->
+                val edits = Myers.computeEdits(lines, lines)
+                edits.all { it is Myers.Edit.Keep } shouldBe true
+                edits.size shouldBe lines.size
+            }
+        }
+
+        "diff handles arbitrary list pairs correctly" {
+            checkAll(
+                Arb.list(Arb.string(0..10), 0..30),
+                Arb.list(Arb.string(0..10), 0..30),
+            ) { a, b ->
+                val edits = Myers.computeEdits(a, b)
+
+                val deletedCount = edits.count { it is Myers.Edit.Delete }
+                val insertedCount = edits.count { it is Myers.Edit.Insert }
+                val keptCount = edits.count { it is Myers.Edit.Keep }
+
+                deletedCount + keptCount shouldBe a.size
+                insertedCount + keptCount shouldBe b.size
+            }
         }
     })

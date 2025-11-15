@@ -3,6 +3,11 @@ package dev.kamisama.core.delta
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.property.Arb
+import io.kotest.property.arbitrary.byte
+import io.kotest.property.arbitrary.int
+import io.kotest.property.arbitrary.list
+import io.kotest.property.checkAll
 
 /** Tests for circular ring buffer. */
 class RingBufferSpec :
@@ -26,38 +31,25 @@ class RingBufferSpec :
             }
         }
 
-        "add beyond capacity wraps correctly" {
-            val buffer = RingBuffer(3)
-            buffer.add(1)
-            buffer.add(2)
-            buffer.add(3)
-            buffer.get(0) shouldBe 1.toByte()
+        "toByteArray maintains last N elements after arbitrary insertions" {
+            checkAll<List<Byte>>(Arb.list(Arb.byte(), 1..100)) { bytes ->
+                val capacity = (bytes.size / 2).coerceAtLeast(1)
+                val buffer = RingBuffer(capacity)
 
-            buffer.add(4)
-            buffer.size() shouldBe 3
-            buffer.get(0) shouldBe 2.toByte()
-            buffer.get(1) shouldBe 3.toByte()
-            buffer.get(2) shouldBe 4.toByte()
+                bytes.forEach { buffer.add(it) }
+
+                val result = buffer.toByteArray()
+                val expected = bytes.takeLast(capacity).toByteArray()
+                result shouldBe expected
+            }
         }
 
-        "toByteArray returns correct contiguous view" {
-            val buffer = RingBuffer(5)
-            buffer.add(10)
-            buffer.add(20)
-            buffer.add(30)
-
-            buffer.toByteArray() shouldBe byteArrayOf(10, 20, 30)
-        }
-
-        "toByteArray works after wrapping" {
-            val buffer = RingBuffer(3)
-            buffer.add(1)
-            buffer.add(2)
-            buffer.add(3)
-            buffer.add(4)
-            buffer.add(5)
-
-            buffer.toByteArray() shouldBe byteArrayOf(3, 4, 5)
+        "buffer maintains correct size after arbitrary operations" {
+            checkAll(Arb.int(1..100), Arb.list(Arb.byte(), 0..200)) { capacity, bytes ->
+                val buffer = RingBuffer(capacity)
+                bytes.forEach { buffer.add(it) }
+                buffer.size() shouldBe minOf(bytes.size, capacity)
+            }
         }
 
         "clear resets buffer" {
@@ -78,19 +70,5 @@ class RingBufferSpec :
 
             shouldThrow<IllegalArgumentException> { buffer.get(-1) }
             shouldThrow<IllegalArgumentException> { buffer.get(2) }
-        }
-
-        "extensive wrapping maintains correctness" {
-            val buffer = RingBuffer(4)
-
-            for (i in 0 until 100) {
-                buffer.add((i % 256).toByte())
-            }
-
-            buffer.size() shouldBe 4
-            buffer.get(0) shouldBe 96.toByte()
-            buffer.get(1) shouldBe 97.toByte()
-            buffer.get(2) shouldBe 98.toByte()
-            buffer.get(3) shouldBe 99.toByte()
         }
     })

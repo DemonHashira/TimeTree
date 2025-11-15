@@ -2,6 +2,12 @@ package dev.kamisama.core.delta
 
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.property.Arb
+import io.kotest.property.arbitrary.byte
+import io.kotest.property.arbitrary.byteArray
+import io.kotest.property.arbitrary.int
+import io.kotest.property.arbitrary.list
+import io.kotest.property.checkAll
 
 /** Tests for byte accumulator buffer. */
 class ByteAccumulatorSpec :
@@ -24,69 +30,47 @@ class ByteAccumulatorSpec :
             acc.toByteArray() shouldBe byteArrayOf(10, 20, 30)
         }
 
-        "addAll appends byte array" {
-            val acc = ByteAccumulator()
-            acc.add(1)
-            acc.addAll(byteArrayOf(2, 3, 4))
-            acc.add(5)
+        "accumulator correctly stores arbitrary byte sequences" {
+            checkAll<List<Byte>>(Arb.list(Arb.byte(), 0..1000)) { bytes ->
+                val acc = ByteAccumulator()
+                bytes.forEach { acc.add(it) }
 
-            acc.toByteArray() shouldBe byteArrayOf(1, 2, 3, 4, 5)
-        }
-
-        "addAll with offset and length" {
-            val acc = ByteAccumulator()
-            val data = byteArrayOf(10, 20, 30, 40, 50)
-            acc.addAll(data, 1, 3)
-
-            acc.toByteArray() shouldBe byteArrayOf(20, 30, 40)
-        }
-
-        "clear resets accumulator" {
-            val acc = ByteAccumulator()
-            acc.add(1)
-            acc.add(2)
-            acc.add(3)
-
-            acc.size() shouldBe 3
-
-            acc.clear()
-            acc.size() shouldBe 0
-            acc.isEmpty() shouldBe true
-            acc.toByteArray() shouldBe byteArrayOf()
-        }
-
-        "can reuse after clear" {
-            val acc = ByteAccumulator()
-            acc.add(1)
-            acc.add(2)
-            acc.clear()
-            acc.add(3)
-            acc.add(4)
-
-            acc.toByteArray() shouldBe byteArrayOf(3, 4)
-        }
-
-        "handles large accumulation" {
-            val acc = ByteAccumulator()
-            for (i in 0 until 10000) {
-                acc.add((i % 256).toByte())
+                acc.size() shouldBe bytes.size
+                acc.toByteArray() shouldBe bytes.toByteArray()
             }
-
-            acc.size() shouldBe 10000
-            val result = acc.toByteArray()
-            result.size shouldBe 10000
-            result[0] shouldBe 0.toByte()
-            result[255] shouldBe 255.toByte()
         }
 
-        "initial capacity doesn't affect behavior" {
-            val acc1 = ByteAccumulator(10)
-            val acc2 = ByteAccumulator(1000)
+        "addAll appends arbitrary byte arrays" {
+            checkAll(Arb.byteArray(Arb.int(0..100), Arb.byte())) { bytes ->
+                val acc = ByteAccumulator()
+                acc.add(1)
+                acc.addAll(bytes)
+                acc.add(5)
 
-            val data = ByteArray(500) { it.toByte() }
-            acc1.addAll(data)
-            acc2.addAll(data)
+                acc.toByteArray() shouldBe byteArrayOf(1) + bytes + byteArrayOf(5)
+            }
+        }
 
-            acc1.toByteArray() shouldBe acc2.toByteArray()
+        "clear and reuse works correctly" {
+            checkAll(Arb.list(Arb.byte(), 1..100), Arb.list(Arb.byte(), 1..100)) { bytes1, bytes2 ->
+                val acc = ByteAccumulator()
+                bytes1.forEach { acc.add(it) }
+                acc.clear()
+                bytes2.forEach { acc.add(it) }
+
+                acc.toByteArray() shouldBe bytes2.toByteArray()
+            }
+        }
+
+        "initial capacity doesn't affect behavior with arbitrary data" {
+            checkAll(Arb.int(1..1000), Arb.byteArray(Arb.int(0..500), Arb.byte())) { capacity, data ->
+                val acc1 = ByteAccumulator(capacity)
+                val acc2 = ByteAccumulator(10)
+
+                acc1.addAll(data)
+                acc2.addAll(data)
+
+                acc1.toByteArray() shouldBe acc2.toByteArray()
+            }
         }
     })

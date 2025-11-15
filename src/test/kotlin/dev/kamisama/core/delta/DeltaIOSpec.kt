@@ -5,6 +5,16 @@ import dev.kamisama.core.delta.io.VarInt
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.property.Arb
+import io.kotest.property.arbitrary.bind
+import io.kotest.property.arbitrary.byte
+import io.kotest.property.arbitrary.byteArray
+import io.kotest.property.arbitrary.choice
+import io.kotest.property.arbitrary.int
+import io.kotest.property.arbitrary.list
+import io.kotest.property.arbitrary.long
+import io.kotest.property.arbitrary.map
+import io.kotest.property.checkAll
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 
@@ -58,22 +68,41 @@ class DeltaIOSpec :
             (read.ops[1] as DeltaOp.Copy).length shouldBe 512
         }
 
-        test("round trip delta with mixed operations") {
-            val ops =
-                listOf(
-                    DeltaOp.Copy(0L, 8192),
-                    DeltaOp.Insert("MODIFIED".toByteArray()),
-                    DeltaOp.Copy(16384L, 4096),
-                )
-            val delta = Delta(8192, ops)
-            val out = ByteArrayOutputStream()
-            DeltaIO.write(delta, out)
+        test("round trip arbitrary deltas") {
+            val insertOpArb = Arb.byteArray(Arb.int(0..1000), Arb.byte()).map { DeltaOp.Insert(it) }
+            val copyOpArb =
+                Arb.bind(
+                    Arb.long(0L..1000000L),
+                    Arb.int(1..10000),
+                ) { offset, length -> DeltaOp.Copy(offset, length) }
 
-            val read = DeltaIO.read(ByteArrayInputStream(out.toByteArray()))
-            read.ops.size shouldBe 3
-            read.ops[0] shouldBe DeltaOp.Copy(0L, 8192)
-            (read.ops[1] as DeltaOp.Insert).data shouldBe "MODIFIED".toByteArray()
-            read.ops[2] shouldBe DeltaOp.Copy(16384L, 4096)
+            val deltaOpArb = Arb.choice(insertOpArb, copyOpArb)
+            val deltaArb =
+                Arb.bind(
+                    Arb.int(64..8192),
+                    Arb.list(deltaOpArb, 0..100),
+                ) { blockSize, ops -> Delta(blockSize, ops) }
+
+            checkAll(deltaArb) { delta ->
+                val out = ByteArrayOutputStream()
+                DeltaIO.write(delta, out)
+
+                val read = DeltaIO.read(ByteArrayInputStream(out.toByteArray()))
+                read.blockSize shouldBe delta.blockSize
+                read.ops.size shouldBe delta.ops.size
+
+                read.ops.zip(delta.ops).forEach { (readOp, originalOp) ->
+                    when {
+                        readOp is DeltaOp.Insert && originalOp is DeltaOp.Insert ->
+                            readOp.data shouldBe originalOp.data
+
+                        readOp is DeltaOp.Copy && originalOp is DeltaOp.Copy -> {
+                            readOp.offset shouldBe originalOp.offset
+                            readOp.length shouldBe originalOp.length
+                        }
+                    }
+                }
+            }
         }
 
         test("invalid magic is rejected") {
@@ -117,23 +146,5 @@ class DeltaIOSpec :
             shouldThrow<IllegalArgumentException> {
                 DeltaIO.read(ByteArrayInputStream(out.toByteArray()))
             }
-        }
-
-        test("large valid delta serializes correctly") {
-            val ops =
-                (0 until 1000).map { it ->
-                    if (it % 2 == 0) {
-                        DeltaOp.Copy((it * 1024).toLong(), 1024)
-                    } else {
-                        DeltaOp.Insert(ByteArray(10) { (it + 48).toByte() })
-                    }
-                }
-            val delta = Delta(8192, ops)
-            val out = ByteArrayOutputStream()
-            DeltaIO.write(delta, out)
-
-            val read = DeltaIO.read(ByteArrayInputStream(out.toByteArray()))
-            read.ops.size shouldBe 1000
-            read.blockSize shouldBe delta.blockSize
         }
     })

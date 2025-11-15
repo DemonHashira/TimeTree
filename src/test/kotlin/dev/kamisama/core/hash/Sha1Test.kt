@@ -2,6 +2,11 @@ package dev.kamisama.core.hash
 
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
+import io.kotest.property.Arb
+import io.kotest.property.arbitrary.byte
+import io.kotest.property.arbitrary.list
+import io.kotest.property.checkAll
 
 /** Tests for SHA-1 hash implementation. */
 class Sha1Test :
@@ -14,5 +19,31 @@ class Sha1Test :
         "SHA-1 should match empty string vector" {
             val id = Sha1Like.computeAll(ByteArray(0))
             id.toHex() shouldBe "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+        }
+
+        "SHA-1 should be deterministic for arbitrary inputs" {
+            checkAll(Arb.list(Arb.byte(), 0..1000)) { data ->
+                val bytes = data.toByteArray()
+                val hash1 = Sha1Like.computeAll(bytes)
+                val hash2 = Sha1Like.computeAll(bytes)
+                hash1 shouldBe hash2
+            }
+        }
+
+        "SHA-1 should produce different hashes for different inputs" {
+            checkAll(Arb.list(Arb.byte(), 1..100)) { data ->
+                val bytes = data.toByteArray()
+                val original = Sha1Like.computeAll(bytes)
+                val modified = Sha1Like.computeAll(bytes + byteArrayOf(0xFF.toByte()))
+                original shouldNotBe modified
+            }
+        }
+
+        "SHA-1 should produce 20-byte (160-bit) hashes" {
+            checkAll(Arb.list(Arb.byte(), 0..100)) { data ->
+                val bytes = data.toByteArray()
+                val hash = Sha1Like.computeAll(bytes)
+                hash.toHex().length shouldBe 40
+            }
         }
     })

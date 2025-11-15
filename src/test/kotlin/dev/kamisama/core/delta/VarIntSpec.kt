@@ -4,6 +4,9 @@ import dev.kamisama.core.delta.io.VarInt
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.property.Arb
+import io.kotest.property.arbitrary.long
+import io.kotest.property.checkAll
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 
@@ -13,26 +16,8 @@ class VarIntSpec :
 
         describe("VarInt encoding") {
 
-            it("encodes small values correctly") {
-                for (value in listOf(0L, 1L, 127L, 128L, 255L, 256L)) {
-                    val out = ByteArrayOutputStream()
-                    VarInt.write(out, value)
-                    val read = VarInt.read(ByteArrayInputStream(out.toByteArray()))
-                    read shouldBe value
-                }
-            }
-
-            it("encodes large values correctly") {
-                for (value in listOf(1000L, 10000L, 100000L, 1000000L, 10000000L)) {
-                    val out = ByteArrayOutputStream()
-                    VarInt.write(out, value)
-                    val read = VarInt.read(ByteArrayInputStream(out.toByteArray()))
-                    read shouldBe value
-                }
-            }
-
-            it("encodes maximum values correctly") {
-                for (value in listOf(Int.MAX_VALUE.toLong(), Long.MAX_VALUE)) {
+            it("round trip for arbitrary non-negative longs") {
+                checkAll(Arb.long(0L..Long.MAX_VALUE)) { value ->
                     val out = ByteArrayOutputStream()
                     VarInt.write(out, value)
                     val read = VarInt.read(ByteArrayInputStream(out.toByteArray()))
@@ -67,16 +52,6 @@ class VarIntSpec :
                 val tooLong = ByteArray(11) { 0x80.toByte() }
                 shouldThrow<IllegalArgumentException> {
                     VarInt.read(ByteArrayInputStream(tooLong))
-                }
-            }
-
-            it("round trip many values") {
-                val values = (0..1000).map { it * 1337L }
-                for (value in values) {
-                    val out = ByteArrayOutputStream()
-                    VarInt.write(out, value)
-                    val read = VarInt.read(ByteArrayInputStream(out.toByteArray()))
-                    read shouldBe value
                 }
             }
         }

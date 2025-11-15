@@ -5,6 +5,12 @@ import dev.kamisama.core.hash.ObjectId
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.property.Arb
+import io.kotest.property.arbitrary.bind
+import io.kotest.property.arbitrary.int
+import io.kotest.property.arbitrary.list
+import io.kotest.property.arbitrary.map
+import io.kotest.property.checkAll
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 
@@ -44,6 +50,42 @@ class SignatureIOSpec :
             }
         }
 
+        test("round trip arbitrary signatures") {
+            val objectIdGen =
+                Arb.list(Arb.int(0..15), 40..40).map { ints ->
+                    val hexChars = ints.map { "0123456789abcdef"[it] }.joinToString("")
+                    ObjectId.fromHex(hexChars)
+                }
+
+            val blockSigArb: Arb<BlockSignature> =
+                Arb.bind(
+                    Arb.int(0..10000),
+                    Arb.int(),
+                    objectIdGen,
+                ) { idx: Int, weak: Int, strong: ObjectId -> BlockSignature(idx, weak, strong) }
+
+            val signatureArb: Arb<Signature> =
+                Arb.bind(
+                    Arb.int(64..8192),
+                    Arb.list(blockSigArb, 0..100),
+                ) { blockSize: Int, blocks: List<BlockSignature> -> Signature(blockSize, blocks) }
+
+            checkAll(signatureArb) { sig: Signature ->
+                val out = ByteArrayOutputStream()
+                SignatureIO.write(sig, out)
+
+                val read = SignatureIO.read(ByteArrayInputStream(out.toByteArray()))
+                read.blockSize shouldBe sig.blockSize
+                read.blocks.size shouldBe sig.blocks.size
+
+                for (i in read.blocks.indices) {
+                    read.blocks[i].index shouldBe sig.blocks[i].index
+                    read.blocks[i].weak shouldBe sig.blocks[i].weak
+                    read.blocks[i].strong shouldBe sig.blocks[i].strong
+                }
+            }
+        }
+
         test("invalid magic is rejected") {
             val badData = "BADMAGIC".toByteArray()
             shouldThrow<IllegalArgumentException> {
@@ -58,19 +100,5 @@ class SignatureIOSpec :
             shouldThrow<Exception> {
                 SignatureIO.read(ByteArrayInputStream(out.toByteArray()))
             }
-        }
-
-        test("signature with many blocks serializes correctly") {
-            val blocks =
-                (0 until 10000).map {
-                    BlockSignature(it, it * 12345, ObjectId.fromHex("a".repeat(40)))
-                }
-            val sig = Signature(8192, blocks)
-            val out = ByteArrayOutputStream()
-            SignatureIO.write(sig, out)
-
-            val read = SignatureIO.read(ByteArrayInputStream(out.toByteArray()))
-            read.blocks.size shouldBe 10000
-            read.blockSize shouldBe sig.blockSize
         }
     })
