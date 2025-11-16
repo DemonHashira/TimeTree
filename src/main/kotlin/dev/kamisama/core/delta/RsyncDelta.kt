@@ -68,15 +68,8 @@ class RsyncDelta(
             return Delta(sig.blockSize, emptyList())
         }
 
-        window.add(firstByte.toByte())
-        roller.init(byteArrayOf(firstByte.toByte()), 0, 1)
-
-        while (window.size() < sig.blockSize) {
-            val b = target.read()
-            if (b < 0) break
-            window.add(b.toByte())
-            roller.roll(b.toByte())
-        }
+        initWindowWithByte(firstByte.toByte(), window, roller)
+        fillWindow(target, window, roller, sig.blockSize)
 
         while (true) {
             val weak = roller.weak()
@@ -90,15 +83,8 @@ class RsyncDelta(
                 val nextByte = target.read()
                 if (nextByte < 0) break
 
-                window.add(nextByte.toByte())
-                roller.init(byteArrayOf(nextByte.toByte()), 0, 1)
-
-                while (window.size() < sig.blockSize) {
-                    val b = target.read()
-                    if (b < 0) break
-                    window.add(b.toByte())
-                    roller.roll(b.toByte())
-                }
+                initWindowWithByte(nextByte.toByte(), window, roller)
+                fillWindow(target, window, roller, sig.blockSize)
 
                 if (window.isEmpty()) break
             } else {
@@ -245,6 +231,29 @@ class RsyncDelta(
     private fun validateBlockSize(blockSize: Int) {
         require(blockSize in MIN_BLOCK_SIZE..MAX_BLOCK_SIZE) {
             "Block size must be between $MIN_BLOCK_SIZE and $MAX_BLOCK_SIZE (got $blockSize)"
+        }
+    }
+
+    private fun initWindowWithByte(
+        byte: Byte,
+        window: RingBuffer,
+        roller: RsyncRoller,
+    ) {
+        window.add(byte)
+        roller.init(byteArrayOf(byte), 0, 1)
+    }
+
+    private fun fillWindow(
+        target: InputStream,
+        window: RingBuffer,
+        roller: RsyncRoller,
+        blockSize: Int,
+    ) {
+        while (window.size() < blockSize) {
+            val b = target.read()
+            if (b < 0) break
+            window.add(b.toByte())
+            roller.roll(b.toByte())
         }
     }
 }
