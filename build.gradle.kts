@@ -3,6 +3,7 @@ plugins {
     application
     id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
     id("com.gradleup.shadow") version "9.1.0"
+    id("org.jetbrains.kotlinx.kover") version "0.8.3"
 }
 
 group = "dev.kamisama"
