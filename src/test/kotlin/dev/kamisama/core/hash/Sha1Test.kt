@@ -46,4 +46,35 @@ class Sha1Test :
                 hash.toHex().length shouldBe 40
             }
         }
+
+        "SHA-1 incremental API should produce same result as single update" {
+            val message = "The quick brown fox jumps over the lazy dog".toByteArray()
+
+            val hashAll = Sha1Like.computeAll(message)
+
+            val hasher = Sha1()
+            hasher.update(message, 0, 10)
+            hasher.update(message, 10, 15)
+            hasher.update(message, 25, message.size - 25)
+            val hashIncremental = hasher.digest()
+
+            hashAll shouldBe hashIncremental
+        }
+
+        "SHA-1 digest() should reset state for reuse" {
+            val message1 = "first message".toByteArray()
+            val message2 = "second message".toByteArray()
+
+            val hasher = Sha1()
+
+            hasher.update(message1)
+            val hash1 = hasher.digest()
+
+            hasher.update(message2)
+            val hash2 = hasher.digest()
+
+            hash1 shouldBe Sha1Like.computeAll(message1)
+            hash2 shouldBe Sha1Like.computeAll(message2)
+            hash1 shouldNotBe hash2
+        }
     })
