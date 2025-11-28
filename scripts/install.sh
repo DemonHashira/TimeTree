@@ -37,19 +37,10 @@ fi
 echo -e "${GREEN}Building TimeTree...${NC}"
 ./gradlew shadowJar --no-daemon
 
-echo -e "${GREEN}Creating tt wrapper script...${NC}"
-./gradlew createTtWrapper --no-daemon
-
 JAR_FILE="$PROJECT_ROOT/build/libs/timetree.jar"
-TT_SCRIPT="$PROJECT_ROOT/build/libs/tt"
 
 if [ ! -f "$JAR_FILE" ]; then
     echo -e "${RED}Error: timetree.jar not found at $JAR_FILE${NC}"
-    exit 1
-fi
-
-if [ ! -f "$TT_SCRIPT" ]; then
-    echo -e "${RED}Error: tt script not found at $TT_SCRIPT${NC}"
     exit 1
 fi
 
@@ -66,8 +57,13 @@ EOF
 # Copy the JAR file
 cp "$JAR_FILE" "$INSTALL_DIR/timetree.jar"
 
-# Copy the tt script
-cp "$TT_SCRIPT" "$INSTALL_DIR/tt"
+# Create tt as a copy of timetree wrapper
+cat > "$INSTALL_DIR/tt" << 'EOF'
+#!/bin/sh
+# TimeTree 'tt' wrapper script
+JAR_FILE="$(dirname "$0")/timetree.jar"
+exec java -jar "$JAR_FILE" "$@"
+EOF
 
 # Make scripts executable
 chmod +x "$INSTALL_DIR/timetree"
