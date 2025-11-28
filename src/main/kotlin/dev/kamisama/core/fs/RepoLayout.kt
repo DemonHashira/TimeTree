@@ -50,5 +50,10 @@ fun ensureInitialized(
         AtomicFile(repo.head).writeUtf8("ref: refs/heads/$defaultBranch\n")
     }
 
+    // Hide .timetree directory on Windows
+    if (System.getProperty("os.name").lowercase().contains("windows") && Files.exists(repo.meta)) {
+        runCatching { Files.setAttribute(repo.meta, "dos:hidden", true) }
+    }
+
     return !isAlreadyInitialized
 }
