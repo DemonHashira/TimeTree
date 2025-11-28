@@ -31,6 +31,11 @@ timetree status
 
 ## Installation
 
+**Prerequisites:** Java JDK 11 or higher (Java 21 recommended - latest LTS version). Check with:
+```bash
+java -version
+```
+
 ### Linux and macOS
 
 ```bash
