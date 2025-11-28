@@ -3,7 +3,7 @@ package dev.kamisama.core.hash
 /**
  * SHA-1 hash implementation with incremental updates.
  */
-class Sha1 : Sha1Like {
+class Sha1 : HashAlgorithm {
     // State H0..H4 (32-bit words)
     private var h0 = 0x67452301
     private var h1 = 0xEFCDAB89.toInt()

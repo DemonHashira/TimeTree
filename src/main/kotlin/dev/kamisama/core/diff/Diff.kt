@@ -52,7 +52,7 @@ object Diff {
 
         val edits = Myers.computeEdits(oldContent, newContent)
 
-        if (edits.isEmpty() || edits.all { it is Myers.Edit.Keep }) {
+        if (edits.isEmpty() || edits.all { edit -> edit is DiffAlgorithm.Edit.Keep }) {
             return ""
         }
 

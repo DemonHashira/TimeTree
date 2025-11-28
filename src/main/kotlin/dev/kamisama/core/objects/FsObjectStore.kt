@@ -1,9 +1,9 @@
 package dev.kamisama.core.objects
 
 import dev.kamisama.core.fs.RepoLayout
+import dev.kamisama.core.hash.HashAlgorithm
 import dev.kamisama.core.hash.ObjectId
 import dev.kamisama.core.hash.Sha1
-import dev.kamisama.core.hash.Sha1Like
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
@@ -23,7 +23,7 @@ object FsObjectStore {
     ): ObjectId {
         val size = content.size.toLong()
         val header = headerProvider(size)
-        val hasher: Sha1Like = Sha1()
+        val hasher: HashAlgorithm = Sha1()
         hasher.update(header)
         hasher.update(content)
         val id = hasher.digest()
@@ -47,7 +47,7 @@ object FsObjectStore {
     ): ObjectId {
         val size = Files.size(path)
         val header = headerProvider(size)
-        val hasher: Sha1Like = Sha1()
+        val hasher: HashAlgorithm = Sha1()
         hasher.update(header)
         Files.newInputStream(path).use { input ->
             val buf = ByteArray(DEFAULT_BUFFER_SIZE)
@@ -76,7 +76,7 @@ object FsObjectStore {
     fun computeBlobHash(path: Path): ObjectId {
         val size = Files.size(path)
         val header = ObjectHeaders.blobHeader(size)
-        val hasher: Sha1Like = Sha1()
+        val hasher: HashAlgorithm = Sha1()
         hasher.update(header)
         Files.newInputStream(path).use { input ->
             val buf = ByteArray(DEFAULT_BUFFER_SIZE)

@@ -3,22 +3,7 @@ package dev.kamisama.core.diff
 /**
  * Myers O(ND) diff algorithm for computing the shortest edit script.
  */
-object Myers {
-    /** Single edit operation. */
-    sealed class Edit {
-        data class Keep(
-            val line: String,
-        ) : Edit()
-
-        data class Insert(
-            val line: String,
-        ) : Edit()
-
-        data class Delete(
-            val line: String,
-        ) : Edit()
-    }
-
+object Myers : DiffAlgorithm {
     /** Records position during the forward pass for backtracking. */
     private data class Step(
         val k: Int,
@@ -30,10 +15,10 @@ object Myers {
     )
 
     /** Computes the edit sequence transforming list a into list b. */
-    fun computeEdits(
+    override fun computeEdits(
         a: List<String>,
         b: List<String>,
-    ): List<Edit> {
+    ): List<DiffAlgorithm.Edit> {
         val n = a.size
         val m = b.size
         val maxD = n + m
@@ -102,8 +87,8 @@ object Myers {
         trace: List<Map<Int, Step>>,
         dFinal: Int,
         kFinal: Int,
-    ): List<Edit> {
-        val editsReversed = mutableListOf<Edit>()
+    ): List<DiffAlgorithm.Edit> {
+        val editsReversed = mutableListOf<DiffAlgorithm.Edit>()
 
         var d = dFinal
         var k = kFinal
@@ -118,7 +103,7 @@ object Myers {
             while (curX > prevX && curY > prevY) {
                 curX--
                 curY--
-                editsReversed += Edit.Keep(a[curX])
+                editsReversed += DiffAlgorithm.Edit.Keep(a[curX])
             }
 
             if (d == 0) break
@@ -130,14 +115,14 @@ object Myers {
                 }
                 // Came from the right -> the paid step was Delete
                 val deletedLine = a[prevX - 1]
-                editsReversed += Edit.Delete(deletedLine)
+                editsReversed += DiffAlgorithm.Edit.Delete(deletedLine)
             } else {
                 if (prevY <= 0) {
                     error("Backtrack inconsistency: expected Insert but prevY=$prevY")
                 }
                 // Came from the down -> the paid step was Insert
                 val insertedLine = b[prevY - 1]
-                editsReversed += Edit.Insert(insertedLine)
+                editsReversed += DiffAlgorithm.Edit.Insert(insertedLine)
             }
 
             d--
@@ -148,11 +133,11 @@ object Myers {
     }
 
     /** Formats edits as unified diff with context lines. */
-    fun formatUnifiedDiff(
-        edits: List<Edit>,
-        aLabel: String = "a",
-        bLabel: String = "b",
-        contextLines: Int = 3,
+    override fun formatUnifiedDiff(
+        edits: List<DiffAlgorithm.Edit>,
+        aLabel: String,
+        bLabel: String,
+        contextLines: Int,
     ): String {
         if (edits.isEmpty()) {
             return ""
@@ -170,9 +155,9 @@ object Myers {
 
             for (edit in hunk.edits) {
                 when (edit) {
-                    is Edit.Keep -> result.append(" ${edit.line}\n")
-                    is Edit.Insert -> result.append("+${edit.line}\n")
-                    is Edit.Delete -> result.append("-${edit.line}\n")
+                    is DiffAlgorithm.Edit.Keep -> result.append(" ${edit.line}\n")
+                    is DiffAlgorithm.Edit.Insert -> result.append("+${edit.line}\n")
+                    is DiffAlgorithm.Edit.Delete -> result.append("-${edit.line}\n")
                 }
             }
         }
@@ -182,7 +167,7 @@ object Myers {
 
     private data class Hunk(
         val header: HunkHeader,
-        val edits: List<Edit>,
+        val edits: List<DiffAlgorithm.Edit>,
     )
 
     private data class HunkHeader(
@@ -194,13 +179,13 @@ object Myers {
 
     /** Groups edits into hunks separated by unchanged context. */
     private fun groupIntoHunks(
-        edits: List<Edit>,
+        edits: List<DiffAlgorithm.Edit>,
         contextLines: Int,
     ): List<Hunk> {
         if (edits.isEmpty()) return emptyList()
 
         val hunks = mutableListOf<Hunk>()
-        val currentHunkEdits = mutableListOf<Edit>()
+        val currentHunkEdits = mutableListOf<DiffAlgorithm.Edit>()
         var contextCount = 0
         var aLine = 1
         var bLine = 1
@@ -210,14 +195,14 @@ object Myers {
         var hunkBCount = 0
 
         for ((index, edit) in edits.withIndex()) {
-            val isChange = edit is Edit.Insert || edit is Edit.Delete
+            val isChange = edit is DiffAlgorithm.Edit.Insert || edit is DiffAlgorithm.Edit.Delete
 
             if (isChange) {
                 if (currentHunkEdits.isEmpty()) {
                     val contextStart = maxOf(0, index - contextLines)
                     for (i in contextStart until index) {
                         val ctx = edits[i]
-                        if (ctx is Edit.Keep) {
+                        if (ctx is DiffAlgorithm.Edit.Keep) {
                             currentHunkEdits.add(ctx)
                             hunkACount++
                             hunkBCount++
@@ -229,17 +214,17 @@ object Myers {
 
                 currentHunkEdits.add(edit)
                 when (edit) {
-                    is Edit.Delete -> {
+                    is DiffAlgorithm.Edit.Delete -> {
                         hunkACount++
                         aLine++
                     }
 
-                    is Edit.Insert -> {
+                    is DiffAlgorithm.Edit.Insert -> {
                         hunkBCount++
                         bLine++
                     }
 
-                    is Edit.Keep -> error("Unreachable: Keep should not occur in isChange branch")
+                    is DiffAlgorithm.Edit.Keep -> error("Unreachable: Keep should not occur in isChange branch")
                 }
                 contextCount = 0
             } else {
@@ -252,7 +237,7 @@ object Myers {
                     val nextChangeIndex =
                         edits
                             .subList(index + 1, edits.size)
-                            .indexOfFirst { it is Edit.Insert || it is Edit.Delete }
+                            .indexOfFirst { it is DiffAlgorithm.Edit.Insert || it is DiffAlgorithm.Edit.Delete }
 
                     val shouldClose =
                         contextCount >= contextLines &&

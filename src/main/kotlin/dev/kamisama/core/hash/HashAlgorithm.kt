@@ -1,9 +1,9 @@
 package dev.kamisama.core.hash
 
 /**
- * Streaming SHA-1 hash interface.
+ * Interface for cryptographic hash algorithms.
  */
-interface Sha1Like {
+interface HashAlgorithm {
     /** Updates hash with new bytes. */
     fun update(
         data: ByteArray,

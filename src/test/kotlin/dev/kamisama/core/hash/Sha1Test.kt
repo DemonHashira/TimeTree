@@ -12,20 +12,20 @@ import io.kotest.property.checkAll
 class Sha1Test :
     StringSpec({
         "SHA-1 should match NIST test vector for 'abc'" {
-            val id = Sha1Like.computeAll("abc".toByteArray())
+            val id = HashAlgorithm.computeAll("abc".toByteArray())
             id.toHex() shouldBe "a9993e364706816aba3e25717850c26c9cd0d89d"
         }
 
         "SHA-1 should match empty string vector" {
-            val id = Sha1Like.computeAll(ByteArray(0))
+            val id = HashAlgorithm.computeAll(ByteArray(0))
             id.toHex() shouldBe "da39a3ee5e6b4b0d3255bfef95601890afd80709"
         }
 
         "SHA-1 should be deterministic for arbitrary inputs" {
             checkAll(Arb.list(Arb.byte(), 0..1000)) { data ->
                 val bytes = data.toByteArray()
-                val hash1 = Sha1Like.computeAll(bytes)
-                val hash2 = Sha1Like.computeAll(bytes)
+                val hash1 = HashAlgorithm.computeAll(bytes)
+                val hash2 = HashAlgorithm.computeAll(bytes)
                 hash1 shouldBe hash2
             }
         }
@@ -33,8 +33,8 @@ class Sha1Test :
         "SHA-1 should produce different hashes for different inputs" {
             checkAll(Arb.list(Arb.byte(), 1..100)) { data ->
                 val bytes = data.toByteArray()
-                val original = Sha1Like.computeAll(bytes)
-                val modified = Sha1Like.computeAll(bytes + byteArrayOf(0xFF.toByte()))
+                val original = HashAlgorithm.computeAll(bytes)
+                val modified = HashAlgorithm.computeAll(bytes + byteArrayOf(0xFF.toByte()))
                 original shouldNotBe modified
             }
         }
@@ -42,7 +42,7 @@ class Sha1Test :
         "SHA-1 should produce 20-byte (160-bit) hashes" {
             checkAll(Arb.list(Arb.byte(), 0..100)) { data ->
                 val bytes = data.toByteArray()
-                val hash = Sha1Like.computeAll(bytes)
+                val hash = HashAlgorithm.computeAll(bytes)
                 hash.toHex().length shouldBe 40
             }
         }
@@ -50,7 +50,7 @@ class Sha1Test :
         "SHA-1 incremental API should produce same result as single update" {
             val message = "The quick brown fox jumps over the lazy dog".toByteArray()
 
-            val hashAll = Sha1Like.computeAll(message)
+            val hashAll = HashAlgorithm.computeAll(message)
 
             val hasher = Sha1()
             hasher.update(message, 0, 10)
@@ -73,8 +73,8 @@ class Sha1Test :
             hasher.update(message2)
             val hash2 = hasher.digest()
 
-            hash1 shouldBe Sha1Like.computeAll(message1)
-            hash2 shouldBe Sha1Like.computeAll(message2)
+            hash1 shouldBe HashAlgorithm.computeAll(message1)
+            hash2 shouldBe HashAlgorithm.computeAll(message2)
             hash1 shouldNotBe hash2
         }
     })

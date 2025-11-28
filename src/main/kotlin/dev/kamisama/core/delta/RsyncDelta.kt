@@ -1,7 +1,7 @@
 package dev.kamisama.core.delta
 
+import dev.kamisama.core.hash.HashAlgorithm
 import dev.kamisama.core.hash.Sha1
-import dev.kamisama.core.hash.Sha1Like
 import java.io.InputStream
 import java.io.OutputStream
 import java.io.RandomAccessFile
@@ -11,7 +11,7 @@ import java.nio.file.Path
  * rsync-style delta engine using rolling checksums and strong hashes.
  */
 class RsyncDelta(
-    private val strongHashFactory: () -> Sha1Like = { Sha1() },
+    private val strongHashFactory: () -> HashAlgorithm = { Sha1() },
 ) : DeltaAlgorithm {
     companion object {
         private const val MIN_BLOCK_SIZE = 64

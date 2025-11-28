@@ -1,6 +1,6 @@
 package dev.kamisama.core.objects
 
-import dev.kamisama.core.hash.Sha1Like
+import dev.kamisama.core.hash.HashAlgorithm
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldNotBe
 
@@ -13,8 +13,8 @@ class DomainSeparationTest :
             val gitHeader = "blob ${content.size}\u0000".toByteArray()
             val ttHeader = ObjectHeaders.blobHeader(content.size.toLong())
 
-            val gitId = Sha1Like.computeAll(gitHeader + content).toHex()
-            val ttId = Sha1Like.computeAll(ttHeader + content).toHex()
+            val gitId = HashAlgorithm.computeAll(gitHeader + content).toHex()
+            val ttId = HashAlgorithm.computeAll(ttHeader + content).toHex()
 
             ttId shouldNotBe gitId
         }

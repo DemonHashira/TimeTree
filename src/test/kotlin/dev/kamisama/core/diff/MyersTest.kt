@@ -25,7 +25,7 @@ class MyersTest :
             val edits = Myers.computeEdits(a, b)
 
             edits.size shouldBe 3
-            edits.all { it is Myers.Edit.Keep } shouldBe true
+            edits.all { it is DiffAlgorithm.Edit.Keep } shouldBe true
         }
 
         "single insertion at end" {
@@ -34,9 +34,9 @@ class MyersTest :
             val edits = Myers.computeEdits(a, b)
 
             edits.size shouldBe 3
-            edits[0] shouldBe Myers.Edit.Keep("line1")
-            edits[1] shouldBe Myers.Edit.Keep("line2")
-            edits[2] shouldBe Myers.Edit.Insert("line3")
+            edits[0] shouldBe DiffAlgorithm.Edit.Keep("line1")
+            edits[1] shouldBe DiffAlgorithm.Edit.Keep("line2")
+            edits[2] shouldBe DiffAlgorithm.Edit.Insert("line3")
         }
 
         "single deletion at end" {
@@ -45,9 +45,9 @@ class MyersTest :
             val edits = Myers.computeEdits(a, b)
 
             edits.size shouldBe 3
-            edits[0] shouldBe Myers.Edit.Keep("line1")
-            edits[1] shouldBe Myers.Edit.Keep("line2")
-            edits[2] shouldBe Myers.Edit.Delete("line3")
+            edits[0] shouldBe DiffAlgorithm.Edit.Keep("line1")
+            edits[1] shouldBe DiffAlgorithm.Edit.Keep("line2")
+            edits[2] shouldBe DiffAlgorithm.Edit.Delete("line3")
         }
 
         "single insertion at beginning" {
@@ -56,9 +56,9 @@ class MyersTest :
             val edits = Myers.computeEdits(a, b)
 
             edits.size shouldBe 3
-            edits[0] shouldBe Myers.Edit.Insert("line1")
-            edits[1] shouldBe Myers.Edit.Keep("line2")
-            edits[2] shouldBe Myers.Edit.Keep("line3")
+            edits[0] shouldBe DiffAlgorithm.Edit.Insert("line1")
+            edits[1] shouldBe DiffAlgorithm.Edit.Keep("line2")
+            edits[2] shouldBe DiffAlgorithm.Edit.Keep("line3")
         }
 
         "single deletion at beginning" {
@@ -67,9 +67,9 @@ class MyersTest :
             val edits = Myers.computeEdits(a, b)
 
             edits.size shouldBe 3
-            edits[0] shouldBe Myers.Edit.Delete("line1")
-            edits[1] shouldBe Myers.Edit.Keep("line2")
-            edits[2] shouldBe Myers.Edit.Keep("line3")
+            edits[0] shouldBe DiffAlgorithm.Edit.Delete("line1")
+            edits[1] shouldBe DiffAlgorithm.Edit.Keep("line2")
+            edits[2] shouldBe DiffAlgorithm.Edit.Keep("line3")
         }
 
         "insertion in middle" {
@@ -78,9 +78,9 @@ class MyersTest :
             val edits = Myers.computeEdits(a, b)
 
             edits.size shouldBe 3
-            edits[0] shouldBe Myers.Edit.Keep("line1")
-            edits[1] shouldBe Myers.Edit.Insert("line2")
-            edits[2] shouldBe Myers.Edit.Keep("line3")
+            edits[0] shouldBe DiffAlgorithm.Edit.Keep("line1")
+            edits[1] shouldBe DiffAlgorithm.Edit.Insert("line2")
+            edits[2] shouldBe DiffAlgorithm.Edit.Keep("line3")
         }
 
         "deletion in middle" {
@@ -89,9 +89,9 @@ class MyersTest :
             val edits = Myers.computeEdits(a, b)
 
             edits.size shouldBe 3
-            edits[0] shouldBe Myers.Edit.Keep("line1")
-            edits[1] shouldBe Myers.Edit.Delete("line2")
-            edits[2] shouldBe Myers.Edit.Keep("line3")
+            edits[0] shouldBe DiffAlgorithm.Edit.Keep("line1")
+            edits[1] shouldBe DiffAlgorithm.Edit.Delete("line2")
+            edits[2] shouldBe DiffAlgorithm.Edit.Keep("line3")
         }
 
         "replacement (delete and insert)" {
@@ -100,10 +100,10 @@ class MyersTest :
             val edits = Myers.computeEdits(a, b)
 
             edits.size shouldBe 4
-            edits[0] shouldBe Myers.Edit.Keep("line1")
-            edits[1] shouldBe Myers.Edit.Delete("old line")
-            edits[2] shouldBe Myers.Edit.Insert("new line")
-            edits[3] shouldBe Myers.Edit.Keep("line3")
+            edits[0] shouldBe DiffAlgorithm.Edit.Keep("line1")
+            edits[1] shouldBe DiffAlgorithm.Edit.Delete("old line")
+            edits[2] shouldBe DiffAlgorithm.Edit.Insert("new line")
+            edits[3] shouldBe DiffAlgorithm.Edit.Keep("line3")
         }
 
         "multiple consecutive insertions" {
@@ -112,11 +112,11 @@ class MyersTest :
             val edits = Myers.computeEdits(a, b)
 
             edits.size shouldBe 5
-            edits[0] shouldBe Myers.Edit.Keep("line1")
-            edits[1] shouldBe Myers.Edit.Insert("line2")
-            edits[2] shouldBe Myers.Edit.Insert("line3")
-            edits[3] shouldBe Myers.Edit.Insert("line4")
-            edits[4] shouldBe Myers.Edit.Keep("line5")
+            edits[0] shouldBe DiffAlgorithm.Edit.Keep("line1")
+            edits[1] shouldBe DiffAlgorithm.Edit.Insert("line2")
+            edits[2] shouldBe DiffAlgorithm.Edit.Insert("line3")
+            edits[3] shouldBe DiffAlgorithm.Edit.Insert("line4")
+            edits[4] shouldBe DiffAlgorithm.Edit.Keep("line5")
         }
 
         "multiple consecutive deletions" {
@@ -125,11 +125,11 @@ class MyersTest :
             val edits = Myers.computeEdits(a, b)
 
             edits.size shouldBe 5
-            edits[0] shouldBe Myers.Edit.Keep("line1")
-            edits[1] shouldBe Myers.Edit.Delete("line2")
-            edits[2] shouldBe Myers.Edit.Delete("line3")
-            edits[3] shouldBe Myers.Edit.Delete("line4")
-            edits[4] shouldBe Myers.Edit.Keep("line5")
+            edits[0] shouldBe DiffAlgorithm.Edit.Keep("line1")
+            edits[1] shouldBe DiffAlgorithm.Edit.Delete("line2")
+            edits[2] shouldBe DiffAlgorithm.Edit.Delete("line3")
+            edits[3] shouldBe DiffAlgorithm.Edit.Delete("line4")
+            edits[4] shouldBe DiffAlgorithm.Edit.Keep("line5")
         }
 
         "completely different lists" {
@@ -138,12 +138,12 @@ class MyersTest :
             val edits = Myers.computeEdits(a, b)
 
             edits.size shouldBe 6
-            edits[0] shouldBe Myers.Edit.Delete("a")
-            edits[1] shouldBe Myers.Edit.Delete("b")
-            edits[2] shouldBe Myers.Edit.Delete("c")
-            edits[3] shouldBe Myers.Edit.Insert("x")
-            edits[4] shouldBe Myers.Edit.Insert("y")
-            edits[5] shouldBe Myers.Edit.Insert("z")
+            edits[0] shouldBe DiffAlgorithm.Edit.Delete("a")
+            edits[1] shouldBe DiffAlgorithm.Edit.Delete("b")
+            edits[2] shouldBe DiffAlgorithm.Edit.Delete("c")
+            edits[3] shouldBe DiffAlgorithm.Edit.Insert("x")
+            edits[4] shouldBe DiffAlgorithm.Edit.Insert("y")
+            edits[5] shouldBe DiffAlgorithm.Edit.Insert("z")
         }
 
         "empty to non-empty" {
@@ -152,8 +152,8 @@ class MyersTest :
             val edits = Myers.computeEdits(a, b)
 
             edits.size shouldBe 2
-            edits[0] shouldBe Myers.Edit.Insert("line1")
-            edits[1] shouldBe Myers.Edit.Insert("line2")
+            edits[0] shouldBe DiffAlgorithm.Edit.Insert("line1")
+            edits[1] shouldBe DiffAlgorithm.Edit.Insert("line2")
         }
 
         "non-empty to empty" {
@@ -162,8 +162,8 @@ class MyersTest :
             val edits = Myers.computeEdits(a, b)
 
             edits.size shouldBe 2
-            edits[0] shouldBe Myers.Edit.Delete("line1")
-            edits[1] shouldBe Myers.Edit.Delete("line2")
+            edits[0] shouldBe DiffAlgorithm.Edit.Delete("line1")
+            edits[1] shouldBe DiffAlgorithm.Edit.Delete("line2")
         }
 
         "complex diff with multiple changes" {
@@ -184,12 +184,12 @@ class MyersTest :
                 )
             val edits = Myers.computeEdits(a, b)
 
-            edits[0] shouldBe Myers.Edit.Keep("function hello() {")
-            edits[1] shouldBe Myers.Edit.Delete("  console.log('old');")
-            edits[2] shouldBe Myers.Edit.Insert("  console.log('new');")
-            edits[3] shouldBe Myers.Edit.Insert("  console.log('extra');")
-            edits[4] shouldBe Myers.Edit.Keep("  return 42;")
-            edits[5] shouldBe Myers.Edit.Keep("}")
+            edits[0] shouldBe DiffAlgorithm.Edit.Keep("function hello() {")
+            edits[1] shouldBe DiffAlgorithm.Edit.Delete("  console.log('old');")
+            edits[2] shouldBe DiffAlgorithm.Edit.Insert("  console.log('new');")
+            edits[3] shouldBe DiffAlgorithm.Edit.Insert("  console.log('extra');")
+            edits[4] shouldBe DiffAlgorithm.Edit.Keep("  return 42;")
+            edits[5] shouldBe DiffAlgorithm.Edit.Keep("}")
         }
 
         "unified diff format should include headers" {
@@ -274,9 +274,9 @@ class MyersTest :
                 )
             val edits = Myers.computeEdits(a, b)
 
-            val keeps = edits.filterIsInstance<Myers.Edit.Keep>()
-            val deletes = edits.filterIsInstance<Myers.Edit.Delete>()
-            val inserts = edits.filterIsInstance<Myers.Edit.Insert>()
+            val keeps = edits.filterIsInstance<DiffAlgorithm.Edit.Keep>()
+            val deletes = edits.filterIsInstance<DiffAlgorithm.Edit.Delete>()
+            val inserts = edits.filterIsInstance<DiffAlgorithm.Edit.Insert>()
 
             keeps.map { it.line } shouldBe listOf("public class Example {", "    }", "}")
             deletes.size shouldBe 2
@@ -293,7 +293,7 @@ class MyersTest :
             val b = listOf("A", "X", "B", "Y", "C", "Z", "D", "E")
             val edits = Myers.computeEdits(a, b)
 
-            val keeps = edits.filterIsInstance<Myers.Edit.Keep>()
+            val keeps = edits.filterIsInstance<DiffAlgorithm.Edit.Keep>()
             keeps.map { it.line } shouldBe listOf("A", "B", "C", "D", "E")
         }
 
@@ -307,9 +307,9 @@ class MyersTest :
 
                 edits.forEach { edit ->
                     when (edit) {
-                        is Myers.Edit.Keep -> reconstructed.add(edit.line)
-                        is Myers.Edit.Insert -> reconstructed.add(edit.line)
-                        is Myers.Edit.Delete -> {}
+                        is DiffAlgorithm.Edit.Keep -> reconstructed.add(edit.line)
+                        is DiffAlgorithm.Edit.Insert -> reconstructed.add(edit.line)
+                        is DiffAlgorithm.Edit.Delete -> {}
                     }
                 }
 
@@ -320,7 +320,7 @@ class MyersTest :
         "diff is minimal - identical lists produce only Keep edits" {
             checkAll(Arb.list(Arb.string(0..20), 0..50)) { lines ->
                 val edits = Myers.computeEdits(lines, lines)
-                edits.all { it is Myers.Edit.Keep } shouldBe true
+                edits.all { it is DiffAlgorithm.Edit.Keep } shouldBe true
                 edits.size shouldBe lines.size
             }
         }
@@ -332,9 +332,9 @@ class MyersTest :
             ) { a, b ->
                 val edits = Myers.computeEdits(a, b)
 
-                val deletedCount = edits.count { it is Myers.Edit.Delete }
-                val insertedCount = edits.count { it is Myers.Edit.Insert }
-                val keptCount = edits.count { it is Myers.Edit.Keep }
+                val deletedCount = edits.count { it is DiffAlgorithm.Edit.Delete }
+                val insertedCount = edits.count { it is DiffAlgorithm.Edit.Insert }
+                val keptCount = edits.count { it is DiffAlgorithm.Edit.Keep }
 
                 deletedCount + keptCount shouldBe a.size
                 insertedCount + keptCount shouldBe b.size
