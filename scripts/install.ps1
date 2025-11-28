@@ -17,24 +17,11 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-Write-Host "Creating tt wrapper script..." -ForegroundColor Green
-& .\gradlew.bat createTtWrapper --no-daemon
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "Error: Failed to create tt wrapper" -ForegroundColor Red
-    exit 1
-}
-
 $JarFile = Join-Path $ProjectRoot "build\libs\timetree.jar"
-$TtScript = Join-Path $ProjectRoot "build\libs\tt"
 
-# Check if files exist
+# Check if JAR exists
 if (-not (Test-Path $JarFile)) {
     Write-Host "Error: timetree.jar not found at $JarFile" -ForegroundColor Red
-    exit 1
-}
-
-if (-not (Test-Path $TtScript)) {
-    Write-Host "Error: tt script not found at $TtScript" -ForegroundColor Red
     exit 1
 }
 
