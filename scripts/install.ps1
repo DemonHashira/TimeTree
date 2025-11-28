@@ -69,9 +69,9 @@ if ($CurrentPath -notlike "*$InstallDir*") {
     Write-Host "  5. Click OK on all dialogs" -ForegroundColor Yellow
     Write-Host ""
     Write-Host "Or run this command in PowerShell (as Administrator):" -ForegroundColor Yellow
-    Write-Host "  [Environment]::SetEnvironmentVariable('Path', `$env:Path + ';$InstallDir', 'User')" -ForegroundColor Green
+    Write-Host ('  [Environment]::SetEnvironmentVariable("Path", $env:Path + ";{0}", "User")' -f $InstallDir) -ForegroundColor Green
 } else {
-    Write-Host "✓ $InstallDir is already in your PATH" -ForegroundColor Green
+    Write-Host "+ $InstallDir is already in your PATH" -ForegroundColor Green
 }
 
 Write-Host ""
