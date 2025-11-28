@@ -34,24 +34,24 @@ if (-not (Test-Path $InstallDir)) {
 Write-Host "Installing timetree to $InstallDir..." -ForegroundColor Green
 
 # Create wrapper batch file for timetree
-$TimetreeBat = @"
+$TimetreeBat = @'
 @echo off
 REM TimeTree wrapper script
 set "JAR_FILE=%~dp0timetree.jar"
 java -jar "%JAR_FILE%" %*
-"@
+'@
 $TimetreeBat | Out-File -FilePath (Join-Path $InstallDir "timetree.bat") -Encoding ASCII
 
 # Copy the JAR file
 Copy-Item $JarFile (Join-Path $InstallDir "timetree.jar") -Force
 
 # Create tt.bat wrapper
-$TtBat = @"
+$TtBat = @'
 @echo off
 REM TimeTree 'tt' wrapper script
 set "JAR_FILE=%~dp0timetree.jar"
 java -jar "%JAR_FILE%" %*
-"@
+'@
 $TtBat | Out-File -FilePath (Join-Path $InstallDir "tt.bat") -Encoding ASCII
 
 Write-Host "✓ Successfully installed timetree and tt to $InstallDir" -ForegroundColor Green
