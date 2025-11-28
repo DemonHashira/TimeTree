@@ -5,14 +5,14 @@ A lightweight version control system built in Kotlin, implementing Git's core co
 ## Features
 
 - **Core VCS Commands**: `init`, `add`, `commit`, `status`, `log`, `diff`, `branch`, `checkout`
-- **Content-Addressable Storage**: SHA-1 hashing for efficient deduplication
-- **Delta Compression**: Rsync-inspired rolling checksum for large files
+- **Content-Addressable Storage**: SHA-1 hashing with domain separation for deduplication
+- **Delta Compression**: Rsync-style rolling checksum for efficient storage
 - **Line-by-Line Diffs**: Myers algorithm for readable change tracking
-- **Pure Kotlin**: Zero external dependencies, runs on any JVM
+- **Pure Kotlin**: Written entirely in Kotlin
 
 ## Quick Start
 
-```bash
+```bash 
 # Initialize a repository
 timetree init
 
@@ -61,31 +61,28 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 | `commit -m "msg"` | Create a commit |
 | `status` | Show working tree status |
 | `log` | Display commit history |
-| `diff <commit1> <commit2>` | Show differences |
+| `diff [commits]` | Show differences |
 | `branch <name>` | Create a branch |
 | `branch -l` | List branches |
 | `branch -d <name>` | Delete a branch |
 | `checkout <branch>` | Switch branches |
-| `checkout -b <name>` | Create and switch to branch |
 
 **Alias**: Use `tt` instead of `timetree` for shorter commands.
 
-## How It Works
+## Architecture
 
-TimeTree stores your project history in a `.timetree/` directory:
+TimeTree stores project history in a `.timetree/` directory:
 
-- **Objects**: Content-addressable blobs and trees (SHA-1 hashed)
+- **Objects**: Content-addressable blobs, trees, and commits
 - **Refs**: Branch pointers and HEAD reference
 - **Index**: Staging area for commits
-- **Commits**: Immutable snapshots with parent links
+- **Delta Store**: Compressed storage for large files
 
-Each commit creates a snapshot of your entire project. Identical files are stored only once thanks to content addressing.
+### Algorithms Implemented
 
-## Algorithms Implemented
-
-- **SHA-1 Hashing**: Custom implementation for content addressing
-- **Myers Diff**: Longest Common Subsequence for line-by-line diffs
-- **Rsync Delta**: Rolling checksum for binary delta compression
+- **HashAlgorithm**: SHA-1 implementation with namespace separation
+- **DiffAlgorithm**: Myers O(ND) algorithm for line diffs
+- **DeltaAlgorithm**: Rsync-style rolling checksum for binary compression
 
 ## Uninstallation
 
@@ -117,8 +114,6 @@ The JAR will be in `build/libs/timetree.jar`
 ```bash
 ./gradlew test
 ```
-
-**Test Coverage**: 75% with comprehensive integration tests
 
 ## License
 
