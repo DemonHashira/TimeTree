@@ -68,8 +68,9 @@ if ($CurrentPath -notlike "*$InstallDir*") {
     Write-Host "  4. Click 'New' and add: $InstallDir" -ForegroundColor Yellow
     Write-Host "  5. Click OK on all dialogs" -ForegroundColor Yellow
     Write-Host ""
-    Write-Host "Or add to PATH with this PowerShell command (run as Administrator):" -ForegroundColor Yellow
-    $PathCommand = "[Environment]::SetEnvironmentVariable('Path', `$env:Path + ';$InstallDir', 'User')"
+    Write-Host "Or add to PATH with this PowerShell command:" -ForegroundColor Yellow
+
+    $PathCommand = "[Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path','User') + ';$InstallDir', 'User')"
     Write-Host "  $PathCommand" -ForegroundColor Green
 } else {
     Write-Host "+ $InstallDir is already in your PATH" -ForegroundColor Green
