@@ -14,7 +14,9 @@ import io.kotest.property.checkAll
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 
-/** Tests for signature serialization. */
+/**
+ * Tests for signature serialization.
+ */
 class SignatureIOSpec :
     FunSpec({
 

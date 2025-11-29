@@ -9,13 +9,13 @@ import java.nio.file.Path
  * Delta operation for reconstructing files.
  */
 sealed class DeltaOp {
-    /** Copy bytes from a basis file at offset. */
+    // Copy bytes from a basis file at offset.
     data class Copy(
         val offset: Long,
         val length: Int,
     ) : DeltaOp()
 
-    /** Insert new data bytes. */
+    // Insert new data bytes.
     data class Insert(
         val data: ByteArray,
     ) : DeltaOp() {
@@ -29,28 +29,26 @@ sealed class DeltaOp {
     }
 }
 
-/**
- * Delta describes reconstruction from basis to target.
- */
+// Delta describes reconstruction from basis to target.
 data class Delta(
     val blockSize: Int,
     val ops: List<DeltaOp>,
 )
 
-/** Block signature with weak and strong checksums. */
+// Block signature with weak and strong checksums.
 data class BlockSignature(
     val index: Int,
     val weak: Int,
     val strong: ObjectId,
 )
 
-/** Complete signature of a basis file. */
+// Complete signature of a basis file.
 data class Signature(
     val blockSize: Int,
     val blocks: List<BlockSignature>,
 )
 
-/** Interface for rsync-style delta algorithm. */
+// Interface for rsync-style delta algorithm.
 interface DeltaAlgorithm {
     fun makeSignature(
         basis: InputStream,

@@ -13,7 +13,9 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
 
-/** Tests for commit creation. */
+/**
+ * Tests for commit creation.
+ */
 class CommitCmdTest :
     StringSpec({
 

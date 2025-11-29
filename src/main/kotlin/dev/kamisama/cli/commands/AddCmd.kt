@@ -15,6 +15,9 @@ import java.nio.file.Paths
 import kotlin.io.path.isRegularFile
 import kotlin.streams.asSequence
 
+/**
+ * Stages files for the next commit with optional delta compression.
+ */
 class AddCmd(
     private val repoProvider: () -> RepoLayout = RepoLayout::fromWorkingDir,
 ) : CliktCommand(name = "add") {
@@ -33,7 +36,6 @@ class AddCmd(
         val root = repo.root.toAbsolutePath().normalize()
         val meta = repo.meta.toAbsolutePath().normalize()
 
-        // Collect all resolved file paths
         val filesToAdd = mutableSetOf<Path>()
 
         for (raw in inputs) {
@@ -44,7 +46,6 @@ class AddCmd(
                     root.resolve(raw).toAbsolutePath().normalize()
                 }
 
-            // Check if it's a glob pattern
             if (raw.contains('*') || raw.contains('?')) {
                 val matcher = root.fileSystem.getPathMatcher("glob:$raw")
                 Files
@@ -56,7 +57,6 @@ class AddCmd(
                 continue
             }
 
-            // Handle "." to mean current directory recursively
             if (raw == ".") {
                 Files
                     .walk(root)
@@ -66,7 +66,6 @@ class AddCmd(
                 continue
             }
 
-            // Handle directories recursively
             if (Files.isDirectory(p)) {
                 Files
                     .walk(p)
@@ -77,7 +76,6 @@ class AddCmd(
                 continue
             }
 
-            // Regular file
             if (Files.isRegularFile(p)) {
                 if (!p.startsWith(meta)) {
                     filesToAdd.add(p)
@@ -89,43 +87,36 @@ class AddCmd(
             }
         }
 
-        // Load the current index to check for already-staged files
         val currentIndex = Index.load(repo)
 
-        // Track different file categories
         val added = mutableListOf<String>()
         val updated = mutableListOf<String>()
         val unchanged = mutableListOf<String>()
         var deltasUsed = 0
 
-        // Process all collected files
         for (abs in filesToAdd) {
             if (!abs.startsWith(root)) {
                 echo("warning: '$abs' is outside repository")
                 continue
             }
 
-            // Skip .timetree internals
             if (abs.startsWith(meta)) {
                 continue
             }
 
             val rel = root.relativize(abs).toString().replace(File.separatorChar, '/')
 
-            // Check if we have a previous version of this file to delta against
+            // Use delta compression for files >= 64KB when a previous version exists
             val existingId = currentIndex[rel]
             val (id, usedDelta) =
                 if (existingId != null && Files.size(abs) >= 64 * 1024) {
-                    // Try delta compression for files >= 64KB with an existing version
                     DeltaStore.storeBlobWithDelta(repo, abs, existingId)
                 } else {
-                    // Small file or no previous version: store as full blob
                     Pair(FsObjectStore.writeBlob(repo, abs), false)
                 }
 
             if (usedDelta) deltasUsed++
 
-            // Check if a file is already staged with the same content
             when {
                 existingId == null -> {
                     // New file - not previously in index
@@ -146,7 +137,6 @@ class AddCmd(
             }
         }
 
-        // Display summary
         if (added.isNotEmpty()) {
             added.sorted().forEach { echo("add '$it'") }
         }
@@ -156,11 +146,9 @@ class AddCmd(
         }
 
         if (unchanged.isNotEmpty() && (added.isEmpty() && updated.isEmpty())) {
-            // Only show unchanged if nothing was actually staged
             echo("All ${unchanged.size} file(s) already staged and up-to-date")
         }
 
-        // Final summary
         val totalChanged = added.size + updated.size
         if (totalChanged == 0 && filesToAdd.isEmpty()) {
             echo("Nothing specified, nothing added.")

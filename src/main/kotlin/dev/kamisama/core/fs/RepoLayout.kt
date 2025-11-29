@@ -15,7 +15,7 @@ data class RepoLayout(
     val refsHeads: Path get() = meta.resolve("refs/heads")
     val head: Path get() = meta.resolve("HEAD")
 
-    /** Returns normalized absolute paths for root and meta. */
+    // Returns normalized absolute paths for root and meta.
     fun normalizedPaths(): Pair<Path, Path> {
         val normalizedRoot = root.toAbsolutePath().normalize()
         val normalizedMeta = normalizedRoot.resolve(META_DIR)
@@ -29,14 +29,14 @@ data class RepoLayout(
     }
 }
 
-/** Checks if the repository is fully initialized. */
+// Checks if the repository is fully initialized.
 fun isInitialized(repo: RepoLayout): Boolean =
     Files.isDirectory(repo.meta) &&
         Files.isDirectory(repo.objects) &&
         Files.isDirectory(repo.refsHeads) &&
         Files.exists(repo.head)
 
-/** Initializes or repairs the repository structure. */
+// Initializes or repairs the repository structure.
 fun ensureInitialized(
     repo: RepoLayout,
     defaultBranch: String,

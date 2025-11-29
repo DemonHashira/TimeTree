@@ -4,7 +4,9 @@ import dev.kamisama.core.hash.HashAlgorithm
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldNotBe
 
-/** Tests for namespace separation from Git. */
+/**
+ * Tests for namespace separation from Git.
+ */
 class DomainSeparationTest :
     StringSpec({
         "namespace changes the id compared to plain git-style header" {

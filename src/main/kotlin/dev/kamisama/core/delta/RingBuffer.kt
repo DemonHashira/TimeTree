@@ -38,7 +38,7 @@ class RingBuffer(
         head = 0
     }
 
-    /** Materializes ring buffer as a contiguous array for strong checksum. */
+    // Materializes ring buffer as a contiguous array for strong checksum.
     fun toByteArray(): ByteArray {
         val result = ByteArray(size)
         for (i in 0 until size) {

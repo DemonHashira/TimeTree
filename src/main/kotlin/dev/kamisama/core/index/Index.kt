@@ -15,10 +15,10 @@ import java.util.Collections
 object Index {
     private const val FILE_NAME = "index"
 
-    /** Returns immutable view of index entries. */
+    // Returns immutable view of index entries.
     fun load(repo: RepoLayout): Map<String, ObjectId> = Collections.unmodifiableMap(loadMutable(repo))
 
-    /** Loads mutable index for update operations. */
+    // Loads mutable index for update operations.
     internal fun loadMutable(repo: RepoLayout): MutableMap<String, ObjectId> {
         val p = indexPath(repo)
         if (!Files.exists(p)) return linkedMapOf()
@@ -36,7 +36,7 @@ object Index {
         return out
     }
 
-    /** Atomically adds or updates a single index entry. */
+    // Atomically adds or updates a single index entry.
     fun update(
         repo: RepoLayout,
         path: String,
@@ -49,7 +49,7 @@ object Index {
 
     private fun indexPath(repo: RepoLayout): Path = repo.meta.resolve(FILE_NAME)
 
-    /** Persists entries atomically in sorted order. */
+    // Persists entries atomically in sorted order.
     private fun save(
         repo: RepoLayout,
         entries: Map<String, ObjectId>,

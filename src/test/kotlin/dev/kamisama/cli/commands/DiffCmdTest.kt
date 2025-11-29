@@ -12,7 +12,9 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import java.nio.file.Files
 
-/** Tests for diff between commits and working directory. */
+/**
+ * Tests for diff command
+ */
 class DiffCmdTest :
     StringSpec({
 
@@ -21,14 +23,12 @@ class DiffCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create and commit a file
             val file = tmp.resolve("test.txt")
             Files.writeString(file, "content")
             val blobId = FsObjectStore.writeBlob(repo, file)
             Index.update(repo, "test.txt", blobId)
             CommitCmd { repo }.test(arrayOf("-m", "Test commit"))
 
-            // Get commit ID from HEAD
             val commitId = Files.readString(repo.refsHeads.resolve("master")).trim()
 
             val cmd = DiffCmd { repo }
@@ -43,11 +43,9 @@ class DiffCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create first empty commit
             CommitCmd { repo }.test(arrayOf("-m", "Empty commit", "--allow-empty"))
             val commit1 = Files.readString(repo.refsHeads.resolve("master")).trim()
 
-            // Create a second commit with a file
             val file = tmp.resolve("added.txt")
             Files.writeString(file, "new content")
             val blobId = FsObjectStore.writeBlob(repo, file)
@@ -97,7 +95,6 @@ class DiffCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create first commit
             val file = tmp.resolve("modified.txt")
             Files.writeString(file, "old content\nline2\nline3")
             val blob1 = FsObjectStore.writeBlob(repo, file)
@@ -105,7 +102,6 @@ class DiffCmdTest :
             CommitCmd { repo }.test(arrayOf("-m", "Initial"))
             val commit1 = Files.readString(repo.refsHeads.resolve("master")).trim()
 
-            // Modify and commit
             Files.writeString(file, "new content\nline2\nline3")
             val blob2 = FsObjectStore.writeBlob(repo, file)
             Index.update(repo, "modified.txt", blob2)
@@ -127,7 +123,6 @@ class DiffCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create the first commit with two files
             val file1 = tmp.resolve("file1.txt")
             Files.writeString(file1, "file1 v1")
             val blob1a = FsObjectStore.writeBlob(repo, file1)
@@ -141,7 +136,6 @@ class DiffCmdTest :
             CommitCmd { repo }.test(arrayOf("-m", "Initial"))
             val commit1 = Files.readString(repo.refsHeads.resolve("master")).trim()
 
-            // Modify both files
             Files.writeString(file1, "file1 v2")
             val blob1b = FsObjectStore.writeBlob(repo, file1)
             Index.update(repo, "file1.txt", blob1b)
@@ -170,7 +164,6 @@ class DiffCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create a simple commit
             val file = tmp.resolve("file.txt")
             Files.writeString(file, "content")
             val blobId = FsObjectStore.writeBlob(repo, file)
@@ -205,14 +198,12 @@ class DiffCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create a commit on master
             val file = tmp.resolve("file.txt")
             Files.writeString(file, "master content")
             val blob1 = FsObjectStore.writeBlob(repo, file)
             Index.update(repo, "file.txt", blob1)
             CommitCmd { repo }.test(arrayOf("-m", "Master commit"))
 
-            // Create feature branch and modify file
             CheckoutCmd { repo }.test(arrayOf("-b", "feature"))
             Files.writeString(file, "feature content")
             val blob2 = FsObjectStore.writeBlob(repo, file)
@@ -232,7 +223,6 @@ class DiffCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create a commit with a multi-line file
             val file = tmp.resolve("file.txt")
             Files.writeString(file, "line1\nline2\nline3\nline4\nline5")
             val blob1 = FsObjectStore.writeBlob(repo, file)
@@ -240,7 +230,6 @@ class DiffCmdTest :
             CommitCmd { repo }.test(arrayOf("-m", "Initial"))
             val commit1 = Files.readString(repo.refsHeads.resolve("master")).trim()
 
-            // Modify the middle line
             Files.writeString(file, "line1\nline2\nCHANGED\nline4\nline5")
             val blob2 = FsObjectStore.writeBlob(repo, file)
             Index.update(repo, "file.txt", blob2)
@@ -272,7 +261,6 @@ class DiffCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create nested structure
             val srcDir = tmp.resolve("src/main")
             Files.createDirectories(srcDir)
             val appFile = srcDir.resolve("App.kt")
@@ -290,7 +278,6 @@ class DiffCmdTest :
             CommitCmd { repo }.test(arrayOf("-m", "Initial"))
             val commit1 = Files.readString(repo.refsHeads.resolve("master")).trim()
 
-            // Modify only the app file
             Files.writeString(appFile, "modified src content")
             val blob1b = FsObjectStore.writeBlob(repo, appFile)
             Index.update(repo, "src/main/App.kt", blob1b)
@@ -337,14 +324,12 @@ class DiffCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create and commit the initial file
             val file = tmp.resolve("test.txt")
             Files.writeString(file, "original content")
             val blob = FsObjectStore.writeBlob(repo, file)
             Index.update(repo, "test.txt", blob)
             CommitCmd { repo }.test(arrayOf("-m", "Initial"))
 
-            // Modify a file in the working directory
             Files.writeString(file, "modified content")
 
             val cmd = DiffCmd { repo }
@@ -364,14 +349,12 @@ class DiffCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create and commit the initial file
             val file = tmp.resolve("test.txt")
             Files.writeString(file, "original content")
             val blob1 = FsObjectStore.writeBlob(repo, file)
             Index.update(repo, "test.txt", blob1)
             CommitCmd { repo }.test(arrayOf("-m", "Initial"))
 
-            // Modify and stage
             Files.writeString(file, "staged content")
             val blob2 = FsObjectStore.writeBlob(repo, file)
             Index.update(repo, "test.txt", blob2)
@@ -390,7 +373,6 @@ class DiffCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create and commit a file
             val file = tmp.resolve("test.txt")
             Files.writeString(file, "content")
             val blob = FsObjectStore.writeBlob(repo, file)
@@ -409,14 +391,12 @@ class DiffCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create and commit a file
             val file = tmp.resolve("test.txt")
             Files.writeString(file, "content to delete")
             val blob = FsObjectStore.writeBlob(repo, file)
             Index.update(repo, "test.txt", blob)
             CommitCmd { repo }.test(arrayOf("-m", "Initial"))
 
-            // Delete a file from the working directory
             Files.delete(file)
 
             val cmd = DiffCmd { repo }
@@ -433,7 +413,6 @@ class DiffCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create and commit multiple files
             val file1 = tmp.resolve("file1.txt")
             Files.writeString(file1, "content1")
             val blob1 = FsObjectStore.writeBlob(repo, file1)
@@ -446,7 +425,6 @@ class DiffCmdTest :
 
             CommitCmd { repo }.test(arrayOf("-m", "Initial"))
 
-            // Modify both files
             Files.writeString(file1, "modified1")
             Files.writeString(file2, "modified2")
 

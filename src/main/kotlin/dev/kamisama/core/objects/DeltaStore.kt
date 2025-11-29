@@ -29,9 +29,7 @@ object DeltaStore {
         val baseOid: ObjectId? = null,
     )
 
-    /**
-     * Stores @path. If a suitable base is provided and delta is beneficial, stores delta payload.
-     */
+    // If a suitable base is provided and delta is beneficial, stores delta payload.
     fun storeBlobWithDelta(
         repo: RepoLayout,
         path: Path,
@@ -40,7 +38,7 @@ object DeltaStore {
         val fileSize = Files.size(path)
         val contentOid = FsObjectStore.computeBlobHash(path)
 
-        // If an object already exists, keep its storage format and fix metadata if needed.
+        // Skip if object already exists
         val objPath = objectPath(repo, contentOid)
         if (Files.exists(objPath)) {
             val existingMeta = getMetadata(repo, contentOid)
@@ -55,13 +53,14 @@ object DeltaStore {
             return contentOid to false
         }
 
-        // Small or no base -> store raw.
+        // Too small or no base available - store full blob
         if (fileSize < MIN_DELTA_FILE_SIZE || recentBlobId == null) {
             val oid = FsObjectStore.writeBlob(repo, path)
             storeMetadata(repo, oid, BlobMetadata(isStoredAsDelta = false, chainDepth = 0))
             return oid to false
         }
 
+        // Avoid deep delta chains
         val baseMeta = getMetadata(repo, recentBlobId)
         if (baseMeta != null && baseMeta.chainDepth >= MAX_CHAIN_DEPTH) {
             val oid = FsObjectStore.writeBlob(repo, path)
@@ -74,16 +73,20 @@ object DeltaStore {
         val reconstructedTemp = Files.createTempFile("timetree-verify", ".tmp")
 
         try {
+            // Generate signature from base
             val signature =
                 Files.newInputStream(baseTemp).use { baseInput ->
                     deltaAlgo.makeSignature(baseInput, DEFAULT_BLOCK_SIZE)
                 }
+
+            // Create delta
             val delta =
                 Files.newInputStream(path).use { targetInput ->
                     deltaAlgo.makeDelta(targetInput, signature)
                 }
             Files.newOutputStream(tempDelta).use { out -> DeltaIO.write(delta, out) }
 
+            // Check if delta is worth storing
             val deltaSize = Files.size(tempDelta)
             if (deltaSize > (fileSize * MAX_DELTA_RATIO).toLong()) {
                 Files.deleteIfExists(tempDelta)
@@ -92,6 +95,7 @@ object DeltaStore {
                 return oid to false
             }
 
+            // Verify delta by reconstructing
             val parsedDelta = Files.newInputStream(tempDelta).use { DeltaIO.read(it) }
             Files.newOutputStream(reconstructedTemp).use { verifyOut ->
                 deltaAlgo.applyDelta(baseTemp, parsedDelta, verifyOut)
@@ -104,6 +108,7 @@ object DeltaStore {
                 return oid to false
             }
 
+            // Store delta with metadata
             writeDeltaBlobAtomic(repo, contentOid, tempDelta)
             storeMetadata(
                 repo,
@@ -122,6 +127,7 @@ object DeltaStore {
         }
     }
 
+    // Streams blob content, recursively resolving delta chain if needed.
     fun streamBlobContent(
         repo: RepoLayout,
         oid: ObjectId,
@@ -162,6 +168,7 @@ object DeltaStore {
         }
     }
 
+    // Stores metadata for a given blob.
     private fun storeMetadata(
         repo: RepoLayout,
         oid: ObjectId,
@@ -179,6 +186,7 @@ object DeltaStore {
         AtomicFile(metaFile).writeUtf8(content)
     }
 
+    // Reads metadata for a given blob.
     private fun getMetadata(
         repo: RepoLayout,
         oid: ObjectId,
@@ -203,6 +211,7 @@ object DeltaStore {
         return BlobMetadata(isStoredAsDelta, chainDepth, baseOid)
     }
 
+    // Writes delta blob atomically.
     private fun writeDeltaBlobAtomic(
         repo: RepoLayout,
         contentOid: ObjectId,
@@ -215,6 +224,7 @@ object DeltaStore {
         }
     }
 
+    // Materializes a blob to a temporary file.
     private fun materializeBlobToTempFile(
         repo: RepoLayout,
         oid: ObjectId,
@@ -226,6 +236,7 @@ object DeltaStore {
         return temp
     }
 
+    // Returns path to blob object file.
     private fun objectPath(
         repo: RepoLayout,
         oid: ObjectId,
@@ -234,6 +245,7 @@ object DeltaStore {
         return dir.resolve(leaf)
     }
 
+    // Returns path to blob metadata file.
     private fun metadataPath(
         repo: RepoLayout,
         oid: ObjectId,
@@ -245,6 +257,7 @@ object DeltaStore {
             .resolve(hex.substring(2))
     }
 
+    // Checks if a file looks like a delta object.
     private fun looksLikeDeltaObject(path: Path): Boolean {
         if (!Files.exists(path)) return false
         Files.newInputStream(path).use { input ->

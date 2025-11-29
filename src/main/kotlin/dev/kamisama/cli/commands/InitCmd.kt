@@ -22,11 +22,13 @@ class InitCmd(
     override fun run() {
         val repo = repoProvider()
 
+        // Check if the directory already exists
         if (Files.exists(repo.meta) && !Files.isDirectory(repo.meta)) {
             echo("${Color.red("Error:")} ${repo.meta} exists but is not a directory", err = true)
             throw ProgramResult(1)
         }
 
+        // Check if we have write permission
         if (!Files.isWritable(repo.root)) {
             echo("${Color.red("Error:")} No write permission in ${repo.root}", err = true)
             throw ProgramResult(1)

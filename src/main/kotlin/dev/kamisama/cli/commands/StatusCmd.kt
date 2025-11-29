@@ -7,6 +7,9 @@ import dev.kamisama.cli.Color
 import dev.kamisama.core.fs.RepoLayout
 import dev.kamisama.core.status.Status
 
+/**
+ * Displays the current state of the working tree and staging area.
+ */
 class StatusCmd(
     private val repoProvider: () -> RepoLayout = RepoLayout::fromWorkingDir,
 ) : CliktCommand(name = "status") {

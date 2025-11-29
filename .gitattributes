@@ -1,7 +1,7 @@
-# === Ensure consistent line endings ===
+# Ensure consistent line endings
 * text=auto eol=lf
 
-# === Treat Kotlin, Java, Gradle, and config as text ===
+# Treat Kotlin, Java, Gradle, and config as text
 *.kt text eol=lf
 *.java text eol=lf
 *.gradle text eol=lf
@@ -10,11 +10,11 @@
 *.md text eol=lf
 *.txt text eol=lf
 
-# === Keep scripts executable ===
+# Keep scripts executable
 *.sh text eol=lf
 *.sh chmod=+x
 
-# === Binary files (never convert line endings) ===
+# Binary files
 *.png binary
 *.jpg binary
 *.jpeg binary

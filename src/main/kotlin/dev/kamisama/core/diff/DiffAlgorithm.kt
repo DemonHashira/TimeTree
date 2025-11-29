@@ -4,7 +4,7 @@ package dev.kamisama.core.diff
  * Interface for line-based diff algorithms.
  */
 interface DiffAlgorithm {
-    /** Single edit operation. */
+    // Single edit operation.
     sealed class Edit {
         data class Keep(
             val line: String,
@@ -19,17 +19,13 @@ interface DiffAlgorithm {
         ) : Edit()
     }
 
-    /**
-     * Computes the edit sequence transforming list a into list b.
-     */
+    // Computes the edit sequence transforming list a into list b.
     fun computeEdits(
         a: List<String>,
         b: List<String>,
     ): List<Edit>
 
-    /**
-     * Formats edits as unified diff with context lines.
-     */
+    // Formats edits as unified diff with context lines.
     fun formatUnifiedDiff(
         edits: List<Edit>,
         aLabel: String = "a",

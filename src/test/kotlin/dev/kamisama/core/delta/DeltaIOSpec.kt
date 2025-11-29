@@ -18,7 +18,9 @@ import io.kotest.property.checkAll
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 
-/** Tests for delta serialization. */
+/**
+ * Tests for delta serialization.
+ */
 class DeltaIOSpec :
     FunSpec({
 
@@ -93,8 +95,9 @@ class DeltaIOSpec :
 
                 read.ops.zip(delta.ops).forEach { (readOp, originalOp) ->
                     when {
-                        readOp is DeltaOp.Insert && originalOp is DeltaOp.Insert ->
+                        readOp is DeltaOp.Insert && originalOp is DeltaOp.Insert -> {
                             readOp.data shouldBe originalOp.data
+                        }
 
                         readOp is DeltaOp.Copy && originalOp is DeltaOp.Copy -> {
                             readOp.offset shouldBe originalOp.offset

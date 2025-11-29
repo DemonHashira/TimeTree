@@ -14,7 +14,9 @@ import io.kotest.property.checkAll
 import java.io.FileInputStream
 import java.nio.file.Files
 
-/** Tests for delta command. */
+/**
+ * Tests for delta command.
+ */
 class DeltaCmdTest :
     StringSpec({
 

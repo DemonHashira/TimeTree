@@ -22,14 +22,10 @@ data class CommitEntry(
     val timezone: String,
     val message: String,
 ) {
-    /**
-     * Returns abbreviated commit ID (first 12 characters).
-     */
+    // Returns abbreviated commit ID.
     fun abbreviatedId(): String = id.toHex()
 
-    /**
-     * Returns a formatted timestamp.
-     */
+    // Returns a formatted timestamp.
     fun formattedTimestamp(): String {
         val instant = Instant.ofEpochSecond(timestamp)
 
@@ -46,20 +42,13 @@ data class CommitEntry(
         return zonedDateTime.format(formatter)
     }
 
-    /**
-     * Returns the first line of the commit message.
-     */
+    // Returns the first line of the commit message.
     fun firstLineOfMessage(): String = message.lines().firstOrNull()?.trim() ?: ""
 }
 
-/**
- * Provides commit history traversal functionality.
- */
+// Provides commit history traversal functionality.
 object Log {
-    /**
-     * Retrieves commit history starting from HEAD in reverse chronological order.
-     * Walks the parent chain from the current branch tip.
-     */
+    // Retrieves commit history starting from HEAD in reverse chronological order.
     fun getHistory(
         repo: RepoLayout,
         maxCount: Int? = null,
@@ -94,9 +83,7 @@ object Log {
         return commits
     }
 
-    /**
-     * Retrieves all commits from all branches in the repository.
-     */
+    // Retrieves all commits from all branches in the repository.
     private fun getAllHistory(
         repo: RepoLayout,
         maxCount: Int? = null,
@@ -121,7 +108,7 @@ object Log {
             }
         }
 
-        // Sort commits by timestamp (most recent first)
+        // Sort commits by timestamp
         val sortedCommits = commits.sortedByDescending { it.timestamp }
 
         // Apply max count limit if specified
@@ -132,9 +119,7 @@ object Log {
         }
     }
 
-    /**
-     * Reads and parses a commit object from the object store.
-     */
+    // Reads and parses a commit object from the object store.
     fun readCommit(
         repo: RepoLayout,
         commitId: ObjectId,
@@ -150,9 +135,7 @@ object Log {
         return parseCommit(commitId, content)
     }
 
-    /**
-     * Parses commit object content into a CommitEntry.
-     */
+    // Parses commit object content into a CommitEntry.
     private fun parseCommit(
         id: ObjectId,
         content: String,
@@ -172,12 +155,15 @@ object Log {
                 inMessage -> {
                     messageLines.add(line)
                 }
+
                 line.startsWith("tree ") -> {
                     tree = ObjectId.fromHex(line.substring(5).trim())
                 }
+
                 line.startsWith("parent ") -> {
                     parent = ObjectId.fromHex(line.substring(7).trim())
                 }
+
                 line.startsWith("author ") -> {
                     val authorLine = line.substring(7).trim()
                     val parsed = parseAuthorLine(authorLine)
@@ -186,6 +172,7 @@ object Log {
                     timestamp = parsed.timestamp
                     timezone = parsed.timezone
                 }
+
                 line.isBlank() -> {
                     inMessage = true
                 }
@@ -210,11 +197,8 @@ object Log {
         )
     }
 
-    /**
-     * Parses author/committer line.
-     */
+    // Parses author/committer line.
     private fun parseAuthorLine(line: String): AuthorInfo {
-        // Extract email
         val emailStart = line.indexOf('<')
         val emailEnd = line.indexOf('>')
 
@@ -225,7 +209,6 @@ object Log {
         val name = line.take(emailStart).trim()
         val email = line.substring(emailStart + 1, emailEnd).trim()
 
-        // Extract timestamp and timezone
         val afterEmail = line.substring(emailEnd + 1).trim()
         val parts = afterEmail.split(" ")
 
@@ -235,9 +218,7 @@ object Log {
         return AuthorInfo(name, email, timestamp, timezone)
     }
 
-    /**
-     * Data class representing parsed author information.
-     */
+    // Data class representing parsed author information.
     private data class AuthorInfo(
         val name: String,
         val email: String,

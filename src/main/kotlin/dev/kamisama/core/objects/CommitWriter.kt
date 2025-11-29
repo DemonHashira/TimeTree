@@ -5,6 +5,9 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+/**
+ * Writes commit objects to the object store.
+ */
 object CommitWriter {
     data class Meta(
         val authorName: String = System.getProperty("user.name", "User"),
@@ -13,7 +16,6 @@ object CommitWriter {
         val timezone: String = getLocalTimezone(),
     ) {
         companion object {
-            /** Gets local timezone offset in Git format (e.g., "+0300"). */
             private fun getLocalTimezone(): String {
                 val now = Instant.now()
                 val zoneId = ZoneId.systemDefault()
@@ -24,7 +26,7 @@ object CommitWriter {
         }
     }
 
-    /** Serializes commits with metadata and returns object ID. */
+    // Serializes commits with metadata and returns object ID.
     fun write(
         tree: ObjectId,
         parent: ObjectId?,

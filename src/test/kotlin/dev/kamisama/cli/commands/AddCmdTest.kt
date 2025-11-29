@@ -11,7 +11,9 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import java.nio.file.Files
 
-/** Tests for file staging. */
+/**
+ * Tests for file staging.
+ */
 class AddCmdTest :
     StringSpec({
 

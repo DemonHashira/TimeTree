@@ -11,6 +11,9 @@ import dev.kamisama.core.fs.RepoLayout
 import dev.kamisama.core.log.Log
 import dev.kamisama.core.refs.Refs
 
+/**
+ * Shows the commit history with author, timestamp, and messages.
+ */
 class LogCmd(
     private val repoProvider: () -> RepoLayout = RepoLayout::fromWorkingDir,
 ) : CliktCommand(name = "log") {
@@ -47,7 +50,7 @@ class LogCmd(
 
         // Display commits in reverse chronological order
         for ((index, commit) in commits.withIndex()) {
-            // Build reference string (e.g., "(HEAD -> master, feature)")
+            // Build the reference string like (HEAD -> master, feature)
             val refs = buildReferenceString(commit.id.toHex(), commitToBranches, head, currentBranch)
 
             // Display commit with references
@@ -68,9 +71,6 @@ class LogCmd(
         }
     }
 
-    /**
-     * Build a reference string like "(HEAD -> master, feature)" with colors.
-     */
     private fun buildReferenceString(
         commitHex: String,
         commitToBranches: Map<String, List<String>>,
@@ -85,22 +85,17 @@ class LogCmd(
         // Check if HEAD points to this commit
         if (head.id?.toHex() == commitHex) {
             if (currentBranch != null && currentBranch in branchesAtCommit) {
-                // HEAD points to a branch which points to this commit
                 refParts.add("${Color.yellow("HEAD")} -> ${Color.green(currentBranch)}")
-                // Add other branches (excluding the current one)
                 branchesAtCommit.filter { it != currentBranch }.sorted().forEach {
                     refParts.add(Color.green(it))
                 }
             } else {
-                // Detached HEAD
                 refParts.add(Color.yellow("HEAD"))
-                // Add all branches
                 branchesAtCommit.sorted().forEach {
                     refParts.add(Color.green(it))
                 }
             }
         } else {
-            // HEAD doesn't point here, just show branches
             branchesAtCommit.sorted().forEach {
                 refParts.add(Color.green(it))
             }

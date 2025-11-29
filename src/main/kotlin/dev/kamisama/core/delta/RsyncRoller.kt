@@ -12,7 +12,7 @@ class RsyncRoller(
     private var b: Int = 0
     private val window = ArrayDeque<Byte>(blockSize)
 
-    /** Initializes checksum with the first block of data. */
+    // Initializes checksum with the first block of data.
     fun init(
         block: ByteArray,
         off: Int,
@@ -30,7 +30,7 @@ class RsyncRoller(
         }
     }
 
-    /** Updates checksum by rolling window one byte forward. */
+    // Updates checksum by rolling window one byte forward.
     fun roll(inByte: Byte) {
         val inVal = inByte.toInt() and 0xFF
 
@@ -48,7 +48,7 @@ class RsyncRoller(
         window.addLast(inByte)
     }
 
-    /** Returns current weak checksum. */
+    // Returns current weak checksum.
     fun weak(): Int = (b shl 16) or a
 
     fun size(): Int = window.size

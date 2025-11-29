@@ -13,6 +13,9 @@ import io.kotest.property.arbitrary.string
 import io.kotest.property.checkAll
 import java.nio.file.Files
 
+/**
+ * Tests for patch command.
+ */
 class PatchCmdTest :
     StringSpec({
 

@@ -8,7 +8,9 @@ import io.kotest.property.arbitrary.byte
 import io.kotest.property.arbitrary.list
 import io.kotest.property.checkAll
 
-/** Tests for SHA-1 hash implementation. */
+/**
+ * Tests for SHA-1 hash implementation.
+ */
 class Sha1Test :
     StringSpec({
         "SHA-1 should match NIST test vector for 'abc'" {

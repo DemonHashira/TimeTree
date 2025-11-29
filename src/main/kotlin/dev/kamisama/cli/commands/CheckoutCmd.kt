@@ -13,6 +13,9 @@ import dev.kamisama.core.fs.RepoLayout
 import dev.kamisama.core.hash.ObjectId
 import dev.kamisama.core.refs.Refs
 
+/**
+ * Switches to a different branch or commit, updating the working tree.
+ */
 class CheckoutCmd(
     private val repoProvider: () -> RepoLayout = RepoLayout::fromWorkingDir,
 ) : CliktCommand(name = "checkout") {
@@ -43,21 +46,16 @@ class CheckoutCmd(
         }
 
         // Try as commit ID
-        try {
-            val commitId =
-                if (target.length == 40) {
-                    ObjectId.fromHex(target)
-                } else {
-                    // Try to find commit by abbreviated ID
-                    findCommitByAbbrev(repo, target)
-                }
-
-            if (commitId != null) {
-                checkoutCommit(repo, commitId)
-                return
+        val commitId =
+            if (target.length == 40) {
+                ObjectId.fromHex(target)
+            } else {
+                findCommitByAbbrev(repo, target)
             }
-        } catch (e: Exception) {
-            // Not a valid commit ID
+
+        if (commitId != null) {
+            checkoutCommit(repo, commitId)
+            return
         }
 
         echo("${Color.red("error:")} pathspec '$target' did not match any branch or commit", err = true)
@@ -137,9 +135,7 @@ class CheckoutCmd(
         }
     }
 
-    /**
-     * Find a commit by abbreviated ID.
-     */
+    // Find a commit by abbreviated ID.
     private fun findCommitByAbbrev(
         repo: RepoLayout,
         abbrev: String,

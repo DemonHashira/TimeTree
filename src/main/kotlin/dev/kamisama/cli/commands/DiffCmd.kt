@@ -99,9 +99,7 @@ class DiffCmd(
         }
     }
 
-    /**
-     * Show differences between index and working directory (unstaged changes).
-     */
+    // Show differences between index and working directory (unstaged changes).
     private fun showWorkingDiff(
         repo: RepoLayout,
         contextLines: Int,
@@ -145,9 +143,7 @@ class DiffCmd(
         }
     }
 
-    /**
-     * Show differences between HEAD and index (staged changes).
-     */
+    // Show differences between HEAD and index (staged changes).
     private fun showStagedDiff(
         repo: RepoLayout,
         contextLines: Int,
@@ -191,9 +187,7 @@ class DiffCmd(
         }
     }
 
-    /**
-     * Resolve a commit reference (branch name, commit hash, or HEAD).
-     */
+    // Resolve a commit reference (branch name, commit hash, or HEAD).
     private fun resolveCommit(
         repo: RepoLayout,
         ref: String,
@@ -204,19 +198,20 @@ class DiffCmd(
                 ?: throw IllegalArgumentException("Branch '$ref' has no commits")
         }
 
-        // Try as a commit hash (full or abbreviated)
+        // Try as a commit hash
         if (ref.matches(Regex("[0-9a-f]{6,40}"))) {
-            // Look for an object in the object store
             val possibleMatches = findObjectsWithPrefix(repo, ref)
             when {
                 possibleMatches.isEmpty() -> {
                     throw IllegalArgumentException("No commit found matching '$ref'")
                 }
+
                 possibleMatches.size > 1 -> {
                     throw IllegalArgumentException(
                         "Ambiguous reference '$ref' matches multiple commits: ${possibleMatches.joinToString(", ")}",
                     )
                 }
+
                 else -> {
                     return ObjectId.fromHex(possibleMatches.first())
                 }
@@ -232,9 +227,7 @@ class DiffCmd(
         throw IllegalArgumentException("Unknown reference: '$ref'")
     }
 
-    /**
-     * Find all objects in the object store that start with the given prefix.
-     */
+    // Find all objects in the object store that start with the given prefix.
     private fun findObjectsWithPrefix(
         repo: RepoLayout,
         prefix: String,

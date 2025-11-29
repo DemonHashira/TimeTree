@@ -4,7 +4,7 @@ package dev.kamisama.core.diff
  * Myers O(ND) diff algorithm for computing the shortest edit script.
  */
 object Myers : DiffAlgorithm {
-    /** Records position during the forward pass for backtracking. */
+    // Records position during the forward pass for backtracking.
     private data class Step(
         val k: Int,
         val x: Int,
@@ -14,7 +14,7 @@ object Myers : DiffAlgorithm {
         val prevY: Int,
     )
 
-    /** Computes the edit sequence transforming list a into list b. */
+    // Computes the edit sequence transforming list a into list b.
     override fun computeEdits(
         a: List<String>,
         b: List<String>,
@@ -80,7 +80,7 @@ object Myers : DiffAlgorithm {
         return emptyList()
     }
 
-    /** Reconstructs the edit script by walking backward through trace. */
+    // Reconstructs the edit script by walking backward through trace.
     private fun backtrack(
         a: List<String>,
         b: List<String>,
@@ -132,7 +132,7 @@ object Myers : DiffAlgorithm {
         return editsReversed.asReversed()
     }
 
-    /** Formats edits as unified diff with context lines. */
+    // Formats edits as unified diff with context lines.
     override fun formatUnifiedDiff(
         edits: List<DiffAlgorithm.Edit>,
         aLabel: String,
@@ -177,7 +177,7 @@ object Myers : DiffAlgorithm {
         val bCount: Int,
     )
 
-    /** Groups edits into hunks separated by unchanged context. */
+    // Groups edits into hunks separated by unchanged context.
     private fun groupIntoHunks(
         edits: List<DiffAlgorithm.Edit>,
         contextLines: Int,
@@ -224,7 +224,9 @@ object Myers : DiffAlgorithm {
                         bLine++
                     }
 
-                    is DiffAlgorithm.Edit.Keep -> error("Unreachable: Keep should not occur in isChange branch")
+                    is DiffAlgorithm.Edit.Keep -> {
+                        error("Unreachable: Keep should not occur in isChange branch")
+                    }
                 }
                 contextCount = 0
             } else {

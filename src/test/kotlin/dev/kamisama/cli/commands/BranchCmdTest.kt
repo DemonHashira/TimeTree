@@ -12,7 +12,9 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import java.nio.file.Files
 
-/** Tests for branch management. */
+/**
+ * Tests for branch management.
+ */
 class BranchCmdTest :
     StringSpec({
 

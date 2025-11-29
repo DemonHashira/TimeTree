@@ -71,11 +71,13 @@ class RsyncDelta(
         initWindowWithByte(firstByte.toByte(), window, roller)
         fillWindow(target, window, roller, sig.blockSize)
 
+        // Slide window through a target file looking for matches
         while (true) {
             val weak = roller.weak()
             val match = findMatch(window, weak, weakMap)
 
             if (match != null) {
+                // Found matching block - emit copy
                 flushPending(pendingInsert, ops)
                 ops.add(DeltaOp.Copy(match.index.toLong() * sig.blockSize, window.size()))
 
@@ -88,6 +90,7 @@ class RsyncDelta(
 
                 if (window.isEmpty()) break
             } else {
+                // No match - buffer byte for insert
                 pendingInsert.add(window.get(0))
 
                 val nextByte = target.read()
@@ -160,6 +163,7 @@ class RsyncDelta(
         return Delta(blockSize, ops)
     }
 
+    // Groups blocks by weak checksum for fast lookup.
     private fun buildWeakMap(sig: Signature): Map<Int, List<BlockSignature>> {
         val map = mutableMapOf<Int, MutableList<BlockSignature>>()
         for (block in sig.blocks) {
@@ -168,6 +172,7 @@ class RsyncDelta(
         return map
     }
 
+    // Finds matching block using weak then strong checksum.
     private fun findMatch(
         window: RingBuffer,
         weak: Int,
@@ -183,6 +188,7 @@ class RsyncDelta(
         return candidates.firstOrNull { it.strong == strong }
     }
 
+    // Flushes accumulated bytes as an insert operation.
     private fun flushPending(
         accumulator: ByteAccumulator,
         ops: MutableList<DeltaOp>,
@@ -193,6 +199,7 @@ class RsyncDelta(
         }
     }
 
+    // Merges adjacent COPY operations for efficiency.
     private fun coalesceOps(ops: List<DeltaOp>): List<DeltaOp> {
         if (ops.isEmpty()) return ops
 

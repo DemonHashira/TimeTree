@@ -28,12 +28,8 @@ if (Test-Path (Join-Path $InstallDir "tt.bat")) {
 
 # Remove directory if empty
 if (Test-Path $InstallDir) {
-    try {
-        Remove-Item $InstallDir -Force -ErrorAction SilentlyContinue
-        Write-Host "✓ Removed installation directory" -ForegroundColor Green
-    } catch {
-        # Directory not empty or other error, ignore
-    }
+    Remove-Item $InstallDir -Force -ErrorAction SilentlyContinue
+    Write-Host "✓ Removed installation directory" -ForegroundColor Green
 }
 
 Write-Host "Uninstallation complete!" -ForegroundColor Green

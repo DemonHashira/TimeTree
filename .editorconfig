@@ -1,7 +1,5 @@
-# Root EditorConfig (apply project-wide)
 root = true
 
-# === Default settings ===
 [*]
 charset = utf-8
 end_of_line = lf
@@ -10,25 +8,25 @@ indent_style = space
 indent_size = 4
 trim_trailing_whitespace = true
 
-# === Kotlin sources ===
+# Kotlin
 [*.{kt,kts}]
 indent_size = 4
 continuation_indent_size = 4
 max_line_length = 120
 
-# === Java sources (if any) ===
+# Java
 [*.java]
 indent_size = 4
 continuation_indent_size = 4
 max_line_length = 120
 
-# === Gradle build scripts ===
+# Gradle
 [*.{gradle,gradle.kts}]
 indent_size = 4
 continuation_indent_size = 4
 max_line_length = 120
 
-# === Markdown/Docs ===
+# Markdown
 [*.md]
-trim_trailing_whitespace = false # allow intentional spaces
+trim_trailing_whitespace = false
 max_line_length = off

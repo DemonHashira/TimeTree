@@ -10,7 +10,9 @@ import io.kotest.property.arbitrary.list
 import io.kotest.property.arbitrary.string
 import io.kotest.property.checkAll
 
-/** Tests for Myers diff algorithm. */
+/**
+ * Tests for Myers diff algorithm.
+ */
 class MyersTest :
     StringSpec({
 
@@ -307,8 +309,14 @@ class MyersTest :
 
                 edits.forEach { edit ->
                     when (edit) {
-                        is DiffAlgorithm.Edit.Keep -> reconstructed.add(edit.line)
-                        is DiffAlgorithm.Edit.Insert -> reconstructed.add(edit.line)
+                        is DiffAlgorithm.Edit.Keep -> {
+                            reconstructed.add(edit.line)
+                        }
+
+                        is DiffAlgorithm.Edit.Insert -> {
+                            reconstructed.add(edit.line)
+                        }
+
                         is DiffAlgorithm.Edit.Delete -> {}
                     }
                 }

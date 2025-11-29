@@ -19,7 +19,7 @@
 #      truncate_to_repo = false
 #      truncation_symbol = ""
 
-# Walk up from $PWD to find the repo root (directory that directly contains .timetree)
+# Walk up from $PWD to find the repo root
 find_timetree_root() {
     local dir="$PWD"
     while [ "$dir" != "/" ]; do
@@ -47,14 +47,12 @@ headFile="$root/.timetree/HEAD"
 
 headRef=$(cat "$headFile")
 
-# Attached HEAD looks like: "ref: refs/heads/test-branch"
 if [[ "$headRef" == ref:* ]]; then
     branch="${headRef##*/}"
     echo "$branch"
     exit 0
 fi
 
-# Detached HEAD case: raw commit id
 short="${headRef:0:7}"
 echo "$short"
 exit 0

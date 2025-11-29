@@ -11,11 +11,9 @@ import java.nio.file.StandardOpenOption
 
 /**
  * Stores, reads and retrieves blob objects in the filesystem.
- * Layout: .timetree/objects/<hh>/<rest>
- * Hash = SHA-1 over: "timetree:v1\0<type> <size>\0" + content.
  */
 object FsObjectStore {
-    // single shared writer for bytes already in memory
+    // Single shared writer for bytes already in memory
     private fun writeObject(
         repo: RepoLayout,
         content: ByteArray,
@@ -39,7 +37,7 @@ object FsObjectStore {
         return id
     }
 
-    // streaming writer for large blobs (Path -> ObjectId), avoids loading a whole file in RAM
+    // Streaming writer for large blobs and avoids loading a whole file in RAM
     private fun writeObjectStreaming(
         repo: RepoLayout,
         path: Path,
@@ -69,10 +67,7 @@ object FsObjectStore {
         return id
     }
 
-    /**
-     * Computes the blob hash for a file WITHOUT writing it to the object store.
-     * This is used for read-only operations like status checks.
-     */
+    // Computes the blob hash for a file without writing it to the object store.
     fun computeBlobHash(path: Path): ObjectId {
         val size = Files.size(path)
         val header = ObjectHeaders.blobHeader(size)

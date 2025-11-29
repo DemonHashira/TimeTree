@@ -15,6 +15,9 @@ import io.kotest.property.checkAll
 import java.io.FileInputStream
 import java.nio.file.Files
 
+/**
+ * Tests for signature creation.
+ */
 class SigCmdTest :
     StringSpec({
 

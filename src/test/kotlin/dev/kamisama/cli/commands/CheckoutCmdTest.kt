@@ -12,7 +12,9 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import java.nio.file.Files
 
-/** Tests for branch switching. */
+/**
+ * Tests for branch switching.
+ */
 class CheckoutCmdTest :
     StringSpec({
 
@@ -96,14 +98,12 @@ class CheckoutCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create an initial commit on master
             val file = tmp.resolve("test.txt")
             Files.writeString(file, "master content")
             val blob1 = FsObjectStore.writeBlob(repo, file)
             Index.update(repo, "test.txt", blob1)
             CommitCmd { repo }.test(arrayOf("-m", "master commit"))
 
-            // Create a feature branch and add different content
             BranchCmd { repo }.test(arrayOf("feature"))
             CheckoutCmd { repo }.test(arrayOf("feature"))
 
@@ -112,10 +112,8 @@ class CheckoutCmdTest :
             Index.update(repo, "test.txt", blob2)
             CommitCmd { repo }.test(arrayOf("-m", "feature commit"))
 
-            // Switch back to master
             CheckoutCmd { repo }.test(arrayOf("master"))
 
-            // Verify file content is from master
             val content = Files.readString(file)
             content shouldBe "master content"
         }
@@ -125,14 +123,12 @@ class CheckoutCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create an initial commit on master
             val file = tmp.resolve("test.txt")
             Files.writeString(file, "content")
             val blob = FsObjectStore.writeBlob(repo, file)
             Index.update(repo, "test.txt", blob)
             CommitCmd { repo }.test(arrayOf("-m", "initial"))
 
-            // Create a feature branch with a new file
             BranchCmd { repo }.test(arrayOf("feature"))
             CheckoutCmd { repo }.test(arrayOf("feature"))
 
@@ -142,10 +138,8 @@ class CheckoutCmdTest :
             Index.update(repo, "feature.txt", featureBlob)
             CommitCmd { repo }.test(arrayOf("-m", "feature commit"))
 
-            // Switch back to master
             CheckoutCmd { repo }.test(arrayOf("master"))
 
-            // Verify index doesn't have feature.txt
             val index = Index.load(repo)
             index.containsKey("feature.txt") shouldBe false
             index.containsKey("test.txt") shouldBe true

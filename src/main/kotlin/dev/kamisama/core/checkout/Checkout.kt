@@ -14,7 +14,7 @@ import java.nio.file.Path
  * Handles checkout of branches and commits.
  */
 object Checkout {
-    /** Switches to a branch by updating HEAD, index, and working tree. */
+    // Switches to a branch by updating HEAD, index, and working tree.
     fun checkoutBranch(
         repo: RepoLayout,
         branchName: String,
@@ -36,7 +36,7 @@ object Checkout {
         updateWorkingTreeToCommit(repo, commitId)
     }
 
-    /** Checks out a specific commit in a detached HEAD state. */
+    // Checks out a specific commit in a detached HEAD state.
     fun checkoutCommit(
         repo: RepoLayout,
         commitId: ObjectId,
@@ -46,7 +46,7 @@ object Checkout {
         updateWorkingTreeToCommit(repo, commitId)
     }
 
-    /** Updates working tree and index to match a commit. */
+    // Updates working tree and index to match a commit.
     private fun updateWorkingTreeToCommit(
         repo: RepoLayout,
         commitId: ObjectId,
@@ -70,7 +70,7 @@ object Checkout {
         updateIndexFromTree(repo, treeEntries)
     }
 
-    /** Removes all files from the working tree except .timetree. */
+    // Removes all files from the working tree except .timetree.
     private fun clearWorkingTree(repo: RepoLayout) {
         val (root, meta) = repo.normalizedPaths()
         val directoriesToRemove = mutableListOf<Path>()
@@ -88,16 +88,10 @@ object Checkout {
             }
         }
 
-        directoriesToRemove.sortedDescending().forEach {
-            try {
-                Files.delete(it)
-            } catch (e: Exception) {
-                // Directory isn't empty, skip
-            }
-        }
+        directoriesToRemove.sortedDescending().forEach { Files.delete(it) }
     }
 
-    /** Replaces index with tree entries from a commit. */
+    // Replaces index with tree entries from a commit.
     private fun updateIndexFromTree(
         repo: RepoLayout,
         treeEntries: Map<String, ObjectId>,

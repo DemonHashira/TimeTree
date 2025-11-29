@@ -9,7 +9,7 @@ import java.nio.file.Files
  * Provides diff functionality for blobs, trees, and commits.
  */
 object Diff {
-    /** Represents a file change in tree diff. */
+    // Represents a file change in tree diff.
     sealed class FileChange {
         data class Added(
             val path: String,
@@ -28,7 +28,7 @@ object Diff {
         ) : FileChange()
     }
 
-    /** Compares two blobs and returns a unified diff string. */
+    // Compares two blobs and returns a unified diff string.
     fun diffBlobs(
         repo: RepoLayout,
         oldBlobId: ObjectId?,
@@ -70,7 +70,7 @@ object Diff {
         }
     }
 
-    /** Builds a diff header with file mode and hash info. */
+    // Builds a diff header with file mode and hash info.
     private fun buildDiffHeader(
         path: String,
         oldBlobId: ObjectId?,
@@ -90,7 +90,7 @@ object Diff {
             }
         }
 
-    /** Compares two trees and returns a list of file changes. */
+    // Compares two trees and returns a list of file changes.
     fun diffTrees(
         repo: RepoLayout,
         oldTreeId: ObjectId?,
@@ -110,9 +110,11 @@ object Diff {
                 oldBlob == null && newBlob != null -> {
                     changes.add(FileChange.Added(path, newBlob))
                 }
+
                 oldBlob != null && newBlob == null -> {
                     changes.add(FileChange.Deleted(path, oldBlob))
                 }
+
                 oldBlob != null && newBlob != null && oldBlob != newBlob -> {
                     changes.add(FileChange.Modified(path, oldBlob, newBlob))
                 }
@@ -122,7 +124,7 @@ object Diff {
         return changes
     }
 
-    /** Compares two commits and returns a unified diff of all changes. */
+    // Compares two commits and returns a unified diff of all changes.
     fun diffCommits(
         repo: RepoLayout,
         oldCommitId: ObjectId?,
@@ -146,10 +148,12 @@ object Diff {
                     val diff = diffBlobs(repo, null, change.blobId, change.path, contextLines)
                     result.append(diff)
                 }
+
                 is FileChange.Deleted -> {
                     val diff = diffBlobs(repo, change.blobId, null, change.path, contextLines)
                     result.append(diff)
                 }
+
                 is FileChange.Modified -> {
                     val diff =
                         diffBlobs(
@@ -167,13 +171,12 @@ object Diff {
         return result.toString()
     }
 
-    /** Reads blob content as lines for diff comparison. */
+    // Reads blob content as lines for diff comparison.
     private fun readBlobAsLines(
         repo: RepoLayout,
         blobId: ObjectId,
     ): List<String> {
         val content = readBlob(repo, blobId)
-        // Split by a new line, avoiding empty trailing line from lines()
         return if (content.isEmpty()) {
             emptyList()
         } else {
@@ -181,7 +184,7 @@ object Diff {
         }
     }
 
-    /** Reads blob content as UTF-8 string. */
+    // Reads blob content as UTF-8 string.
     private fun readBlob(
         repo: RepoLayout,
         blobId: ObjectId,
@@ -200,7 +203,7 @@ object Diff {
         }
     }
 
-    /** Checks if the blob contains binary data (null bytes). */
+    // Checks if the blob contains binary data.
     private fun isBinary(
         repo: RepoLayout,
         blobId: ObjectId,
@@ -224,7 +227,7 @@ object Diff {
         return false
     }
 
-    /** Parses tree object recursively into path->blob map. */
+    // Parses tree objects recursively into a path->blob map.
     fun parseTree(
         repo: RepoLayout,
         treeId: ObjectId,
@@ -255,10 +258,8 @@ object Diff {
             val fullPath = if (prefix.isEmpty()) name else "$prefix/$name"
 
             if (mode == "040000") {
-                // Directory - recurse
                 result.putAll(parseTree(repo, id, fullPath))
             } else {
-                // File
                 result[fullPath] = id
             }
         }
@@ -266,7 +267,7 @@ object Diff {
         return result
     }
 
-    /** Extracts tree ID from a commit object. */
+    // Extracts tree ID from a commit object.
     fun readCommitTree(
         repo: RepoLayout,
         commitId: ObjectId,

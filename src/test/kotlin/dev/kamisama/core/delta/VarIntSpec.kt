@@ -10,7 +10,9 @@ import io.kotest.property.checkAll
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 
-/** Tests for variable-length integer encoding. */
+/**
+ * Tests for variable-length integer encoding.
+ */
 class VarIntSpec :
     DescribeSpec({
 

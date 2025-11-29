@@ -16,6 +16,9 @@ import dev.kamisama.core.objects.FsObjectStore
 import dev.kamisama.core.objects.TreeBuilder
 import dev.kamisama.core.refs.Refs
 
+/**
+ * Creates a new commit from staged files
+ */
 class CommitCmd(
     private val repoProvider: () -> RepoLayout = RepoLayout::fromWorkingDir,
 ) : CliktCommand(name = "commit") {

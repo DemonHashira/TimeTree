@@ -8,7 +8,9 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import java.nio.file.Files
 
-/** Tests for repository initialization. */
+/**
+ * Tests for repository initialization.
+ */
 class InitCmdTest :
     StringSpec({
 

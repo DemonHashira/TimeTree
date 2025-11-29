@@ -12,6 +12,9 @@ import dev.kamisama.cli.Color
 import dev.kamisama.core.fs.RepoLayout
 import dev.kamisama.core.refs.Refs
 
+/**
+ * Creates, lists, and deletes branches in the repository.
+ */
 class BranchCmd(
     private val repoProvider: () -> RepoLayout = RepoLayout::fromWorkingDir,
 ) : CliktCommand(name = "branch") {

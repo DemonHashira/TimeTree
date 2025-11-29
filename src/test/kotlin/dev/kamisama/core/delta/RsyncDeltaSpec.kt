@@ -13,7 +13,9 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.nio.file.Files
 
-/** Tests for rsync delta algorithm. */
+/**
+ * Tests for rsync delta algorithm.
+ */
 class RsyncDeltaSpec :
     FunSpec({
         val algo = RsyncDelta()

@@ -72,7 +72,6 @@ if ($CurrentPath -notlike ('*' + $InstallDir + '*')) {
     Write-Host ''
     Write-Host 'Or add to PATH with this PowerShell command:' -ForegroundColor Yellow
 
-    # Build a literal command string with doubled single-quotes for embedding
     $PathCommand = (
     '[Environment]::SetEnvironmentVariable(''Path'', ' +
         '[Environment]::GetEnvironmentVariable(''Path'',''User'') + '';' +

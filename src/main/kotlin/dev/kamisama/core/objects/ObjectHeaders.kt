@@ -2,14 +2,16 @@ package dev.kamisama.core.objects
 
 import java.nio.charset.StandardCharsets
 
+/**
+ * Object type categories for repository storage.
+ */
 enum class ObjectType { BLOB, TREE, COMMIT }
 
-/**
- * Generates namespaced object headers for domain separation from Git.
- */
+// Generates namespaced object headers for domain separation from Git.
 object ObjectHeaders {
     private const val NS = "timetree:v1"
 
+    // Creates a header with namespace, type, and size.
     fun header(
         type: ObjectType,
         size: Long,

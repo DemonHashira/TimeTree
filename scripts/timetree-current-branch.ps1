@@ -14,11 +14,6 @@
 
         truncate_to_repo = false
         truncation_symbol = ""
-
-    Notes:
-      - Make sure this script's directory is in $env:PATH.
-      - You also need to allow local scripts to execute:
-            Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 #>
 
 function Find-TimeTreeRoot {
@@ -43,7 +38,7 @@ function Find-TimeTreeRoot {
     return $null
 }
 
-# 1. Find repo root (directory that directly contains .timetree)
+# Find repo root
 $currentDir = (Get-Location).Path
 $root = Find-TimeTreeRoot -startDir $currentDir
 
@@ -51,15 +46,15 @@ if (-not $root) {
     exit 1
 }
 
-# 2. If we're literally inside "<root>/.timetree", suppress output.
-#    That prevents duplicate "on branch on branch" when cd'ing into .timetree.
+# If we're literally inside "<root>/.timetree", suppress output.
+# That prevents duplicate "on branch on branch" when cd'ing into .timetree.
 $internalRepoPath = Join-Path $root ".timetree"
 if ($currentDir -eq $internalRepoPath -or
     $currentDir.StartsWith("$internalRepoPath" + [IO.Path]::DirectorySeparatorChar)) {
     exit 1
 }
 
-# 3. Read HEAD file
+# Read HEAD file
 $headFile = Join-Path $internalRepoPath "HEAD"
 if (-not (Test-Path -Path $headFile -PathType Leaf)) {
     exit 1
@@ -67,20 +62,16 @@ if (-not (Test-Path -Path $headFile -PathType Leaf)) {
 
 $headRef = Get-Content -Raw $headFile
 
-# 4. Attached HEAD case: "ref: refs/heads/test-branch"
 if ($headRef -match '^ref:\s+refs/heads/(.+)$') {
     $branchName = $Matches[1]
-    # Write just the branch name to stdout
     Write-Output $branchName
     exit 0
 }
 
-# 5. Detached HEAD case: HEAD contains raw commit id
 if ($headRef.Length -ge 7) {
     $short = $headRef.Substring(0,7)
     Write-Output $short
     exit 0
 }
 
-# Fallback: nothing usable
 exit 1

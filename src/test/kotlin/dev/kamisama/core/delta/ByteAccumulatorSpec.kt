@@ -9,7 +9,9 @@ import io.kotest.property.arbitrary.int
 import io.kotest.property.arbitrary.list
 import io.kotest.property.checkAll
 
-/** Tests for byte accumulator buffer. */
+/**
+ * Tests for byte accumulator buffer.
+ */
 class ByteAccumulatorSpec :
     StringSpec({
 

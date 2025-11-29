@@ -1,11 +1,11 @@
-# === Build outputs ===
+# Build outputs
 /build/
 /out/
 /bin/
 /target/
 /classes/
 
-# === Gradle ===
+# Gradle
 .gradle/
 .kotlin/
 
@@ -15,20 +15,20 @@
 gradlew
 gradlew.bat
 
-# === IntelliJ IDEA ===
+# IntelliJ IDEA
 .idea/
 *.iml
 *.ipr
 *.iws
 
-# === Logs ===
+# Logs
 *.log
 
-# === JVM crash logs ===
+# JVM crash logs
 hs_err_pid*
 replay_pid*
 
-# === Archive / Packages (general artifacts) ===
+# Archive / Packages
 *.war
 *.nar
 *.ear
@@ -36,6 +36,6 @@ replay_pid*
 *.tar.gz
 *.rar
 
-# === Misc / OS ===
+# Misc / OS
 .DS_Store
 Thumbs.db

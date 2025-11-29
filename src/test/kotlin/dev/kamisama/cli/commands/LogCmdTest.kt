@@ -12,7 +12,9 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import java.nio.file.Files
 
-/** Tests for commit history display. */
+/**
+ * Tests for commit history display.
+ */
 class LogCmdTest :
     StringSpec({
 
@@ -33,7 +35,6 @@ class LogCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create and commit a file
             val file = tmp.resolve("test.txt")
             Files.writeString(file, "content")
             val blobId = FsObjectStore.writeBlob(repo, file)
@@ -65,21 +66,18 @@ class LogCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // First commit
             val file1 = tmp.resolve("file1.txt")
             Files.writeString(file1, "content1")
             val blob1 = FsObjectStore.writeBlob(repo, file1)
             Index.update(repo, "file1.txt", blob1)
             CommitCmd { repo }.test(arrayOf("-m", "First commit"))
 
-            // Second commit
             val file2 = tmp.resolve("file2.txt")
             Files.writeString(file2, "content2")
             val blob2 = FsObjectStore.writeBlob(repo, file2)
             Index.update(repo, "file2.txt", blob2)
             CommitCmd { repo }.test(arrayOf("-m", "Second commit"))
 
-            // Third commit
             val file3 = tmp.resolve("file3.txt")
             Files.writeString(file3, "content3")
             val blob3 = FsObjectStore.writeBlob(repo, file3)
@@ -131,7 +129,6 @@ class LogCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create 5 commits
             for (i in 1..5) {
                 val file = tmp.resolve("file$i.txt")
                 Files.writeString(file, "content$i")
@@ -140,7 +137,6 @@ class LogCmdTest :
                 CommitCmd { repo }.test(arrayOf("-m", "Commit $i"))
             }
 
-            // Request only 2 commits
             val cmd = LogCmd { repo }
             val result = cmd.test(arrayOf("-n", "2"))
 
@@ -264,7 +260,6 @@ class LogCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create a chain of 10 commits
             for (i in 1..10) {
                 val file = tmp.resolve("file$i.txt")
                 Files.writeString(file, "content$i")
@@ -291,7 +286,6 @@ class LogCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create an initial commit
             val file1 = tmp.resolve("file1.txt")
             Files.writeString(file1, "content1")
             val blob1 = FsObjectStore.writeBlob(repo, file1)
@@ -313,7 +307,6 @@ class LogCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create commit
             val file = tmp.resolve("test.txt")
             Files.writeString(file, "content")
             val blob = FsObjectStore.writeBlob(repo, file)
@@ -333,7 +326,6 @@ class LogCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create an initial commit
             val file1 = tmp.resolve("file1.txt")
             Files.writeString(file1, "content1")
             val blob1 = FsObjectStore.writeBlob(repo, file1)

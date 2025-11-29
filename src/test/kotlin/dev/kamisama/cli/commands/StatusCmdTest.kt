@@ -12,7 +12,9 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import java.nio.file.Files
 
-/** Tests for working tree status reporting. */
+/**
+ * Tests for working tree status reporting.
+ */
 class StatusCmdTest :
     StringSpec({
 
@@ -33,7 +35,6 @@ class StatusCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create untracked files
             Files.writeString(tmp.resolve("new.txt"), "content")
             Files.writeString(tmp.resolve("another.txt"), "more content")
 
@@ -53,7 +54,6 @@ class StatusCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create and stage a file
             val file = tmp.resolve("staged.txt")
             Files.writeString(file, "staged content")
             val blobId = FsObjectStore.writeBlob(repo, file)
@@ -74,13 +74,11 @@ class StatusCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create and stage a file
             val file = tmp.resolve("modified.txt")
             Files.writeString(file, "original content")
             val blobId = FsObjectStore.writeBlob(repo, file)
             Index.update(repo, "modified.txt", blobId)
 
-            // Modify the file in the working tree
             Files.writeString(file, "changed content")
 
             val cmd = StatusCmd { repo }
@@ -96,13 +94,11 @@ class StatusCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create and stage a file
             val file = tmp.resolve("deleted.txt")
             Files.writeString(file, "to be deleted")
             val blobId = FsObjectStore.writeBlob(repo, file)
             Index.update(repo, "deleted.txt", blobId)
 
-            // Delete the file from the working tree
             Files.delete(file)
 
             val cmd = StatusCmd { repo }
@@ -118,20 +114,17 @@ class StatusCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create a staged file
             val staged = tmp.resolve("staged.txt")
             Files.writeString(staged, "staged")
             val stagedId = FsObjectStore.writeBlob(repo, staged)
             Index.update(repo, "staged.txt", stagedId)
 
-            // Create an unstaged file (staged but then modified)
             val unstaged = tmp.resolve("unstaged.txt")
             Files.writeString(unstaged, "original")
             val unstagedId = FsObjectStore.writeBlob(repo, unstaged)
             Index.update(repo, "unstaged.txt", unstagedId)
             Files.writeString(unstaged, "modified")
 
-            // Create an untracked file
             Files.writeString(tmp.resolve("untracked.txt"), "untracked")
 
             val cmd = StatusCmd { repo }
@@ -151,14 +144,12 @@ class StatusCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create, stage, and commit a file
             val file1 = tmp.resolve("committed.txt")
             Files.writeString(file1, "first commit")
             val blob1 = FsObjectStore.writeBlob(repo, file1)
             Index.update(repo, "committed.txt", blob1)
             CommitCmd { repo }.test(arrayOf("-m", "first commit"))
 
-            // Create and stage a new file
             val file2 = tmp.resolve("new.txt")
             Files.writeString(file2, "new file")
             val blob2 = FsObjectStore.writeBlob(repo, file2)
@@ -170,7 +161,6 @@ class StatusCmdTest :
             result.statusCode shouldBe 0
             result.stdout shouldContain "Changes to be committed:"
             result.stdout shouldContain "new.txt"
-            // committed.txt should not appear since it matches HEAD
             result.stdout shouldNotContain "committed.txt"
         }
 
@@ -179,7 +169,6 @@ class StatusCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create, stage, and commit a file
             val file = tmp.resolve("clean.txt")
             Files.writeString(file, "clean content")
             val blobId = FsObjectStore.writeBlob(repo, file)
@@ -201,14 +190,12 @@ class StatusCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create, stage, and commit a file
             val file = tmp.resolve("modified.txt")
             Files.writeString(file, "original")
             val blob1 = FsObjectStore.writeBlob(repo, file)
             Index.update(repo, "modified.txt", blob1)
             CommitCmd { repo }.test(arrayOf("-m", "initial commit"))
 
-            // Modify the file but don't stage it
             Files.writeString(file, "modified content")
 
             val cmd = StatusCmd { repo }
@@ -225,7 +212,6 @@ class StatusCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create nested untracked files
             val dir = tmp.resolve("src/main/kotlin")
             Files.createDirectories(dir)
             Files.writeString(dir.resolve("App.kt"), "app")
@@ -245,7 +231,6 @@ class StatusCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create a file in the working tree
             Files.writeString(tmp.resolve("normal.txt"), "normal")
 
             val cmd = StatusCmd { repo }
@@ -289,7 +274,6 @@ class StatusCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create, stage, and commit a file
             val file = tmp.resolve("tracked.txt")
             Files.writeString(file, "content")
             val blobId = FsObjectStore.writeBlob(repo, file)
@@ -313,7 +297,6 @@ class StatusCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create untracked files
             Files.writeString(tmp.resolve("untracked1.txt"), "content1")
             Files.writeString(tmp.resolve("untracked2.txt"), "content2")
 
@@ -335,7 +318,6 @@ class StatusCmdTest :
             val repo = RepoLayout(tmp)
             ensureInitialized(repo, "master")
 
-            // Create and stage one tracked file
             val tracked = tmp.resolve("tracked.txt")
             Files.writeString(tracked, "tracked content")
             val blobId = FsObjectStore.writeBlob(repo, tracked)
