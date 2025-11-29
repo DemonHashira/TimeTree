@@ -47,7 +47,7 @@ Installs to `/usr/local/bin`, `~/.local/bin`, or `~/bin`
 ### Windows
 
 ```powershell
-.\scripts\install.ps1
+.\scripts\powershell\install.ps1
 ```
 
 Installs to `%LOCALAPPDATA%\TimeTree\bin`
@@ -98,12 +98,7 @@ TimeTree stores project history in a `.timetree/` directory:
 
 **Windows (PowerShell):**
 ```powershell
-.\scripts\uninstall.ps1
-```
-
-**Windows (Command Prompt):**
-```cmd
-.\scripts\uninstall.bat
+.\scripts\powershell\uninstall.ps1
 ```
 
 ## Building from Source
@@ -123,5 +118,4 @@ The JAR will be in `build/libs/timetree.jar`
 ## License
 
 See [LICENSE](LICENSE) file.
-
 

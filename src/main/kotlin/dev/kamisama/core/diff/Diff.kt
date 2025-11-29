@@ -2,6 +2,11 @@ package dev.kamisama.core.diff
 
 import dev.kamisama.core.fs.RepoLayout
 import dev.kamisama.core.hash.ObjectId
+import dev.kamisama.core.objects.DeltaStore
+import java.io.ByteArrayOutputStream
+import java.nio.ByteBuffer
+import java.nio.charset.CharacterCodingException
+import java.nio.charset.CodingErrorAction
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 
@@ -184,6 +189,23 @@ object Diff {
         }
     }
 
+    // Materializes a blob into memory.
+    private fun materializeBlob(
+        repo: RepoLayout,
+        blobId: ObjectId,
+    ): ByteArray {
+        val out = ByteArrayOutputStream()
+        DeltaStore.streamBlobContent(repo, blobId, out)
+        return out.toByteArray()
+    }
+
+    private fun decodeUtf8(bytes: ByteArray): String =
+        StandardCharsets.UTF_8
+            .newDecoder()
+            .onMalformedInput(CodingErrorAction.REPORT)
+            .decode(ByteBuffer.wrap(bytes))
+            .toString()
+
     // Reads blob content as UTF-8 string.
     private fun readBlob(
         repo: RepoLayout,
@@ -197,8 +219,8 @@ object Diff {
         }
 
         return try {
-            Files.readString(blobPath, StandardCharsets.UTF_8)
-        } catch (e: java.nio.charset.MalformedInputException) {
+            decodeUtf8(materializeBlob(repo, blobId))
+        } catch (e: CharacterCodingException) {
             throw IllegalArgumentException("Blob $hex contains invalid UTF-8 data (possibly binary)")
         }
     }
@@ -215,7 +237,7 @@ object Diff {
             return false
         }
 
-        val bytes = Files.readAllBytes(blobPath)
+        val bytes = materializeBlob(repo, blobId)
         val checkSize = minOf(bytes.size, 8000)
 
         for (i in 0 until checkSize) {
