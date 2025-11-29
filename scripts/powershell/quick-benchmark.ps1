@@ -4,8 +4,8 @@ param ()
 
 $ErrorActionPreference = "Stop"
 
-$ProjectDir = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
-$TimeTree = Join-Path $ProjectDir "build" "libs" "timetree.jar"
+$ProjectDir = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+$TimeTree = Join-Path $ProjectDir "build\libs\timetree.jar"
 $TestDir = Join-Path $ProjectDir "perf-test"
 
 function Measure-MS {

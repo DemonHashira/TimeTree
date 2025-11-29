@@ -4,27 +4,30 @@ param ()
 
 $ErrorActionPreference = "Stop"
 
-$ProjectDir = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+$ProjectDir = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $BenchmarkDir = Join-Path $ProjectDir "benchmark-test"
-$TimeTree = Join-Path $ProjectDir "build" "libs" "timetree.jar"
+$TimeTree = Join-Path $ProjectDir "build\libs\timetree.jar"
 
 $BenchDescriptions = New-Object System.Collections.Generic.List[string]
 $BenchTimes = New-Object System.Collections.Generic.List[double]
 
 function Measure-Bench {
     param(
-        [string] $Description,
+        [string]      $Description,
         [scriptblock] $Action
     )
 
-    Write-Host "Testing: $Description" -ForegroundColor Yellow
+    Write-Host "Testing: $Description"
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
     & $Action
     $sw.Stop()
     $seconds = $sw.Elapsed.TotalSeconds
     $BenchDescriptions.Add($Description) | Out-Null
-    $BenchTimes.Add($seconds) | Out-Null
-    Write-Host ("`u2713 Completed in {0:N3} seconds`n" -f $seconds) -ForegroundColor Green
+    $BenchTimes.Add($seconds)           | Out-Null
+
+    $msg = "Completed in {0:N3} seconds" -f $seconds
+    Write-Host $msg
+    Write-Host ""
 }
 
 function Get-LatestCommit {
@@ -43,7 +46,8 @@ function Get-LatestCommit {
     return $match.Matches[0].Groups[1].Value
 }
 
-Write-Host "=== TimeTree Performance Benchmarks ===`n" -ForegroundColor Cyan
+Write-Host "=== TimeTree Performance Benchmarks ==="
+Write-Host ""
 
 # Build first
 Push-Location $ProjectDir
@@ -64,18 +68,19 @@ Push-Location $BenchmarkDir
 try {
     # Initialize repository
     & java -jar $TimeTree init > $null
+    if ($LASTEXITCODE -ne 0) { throw "TimeTree init failed with exit code $LASTEXITCODE" }
 
-    Write-Host "--- Benchmark 1: Staging 100 Files ---" -ForegroundColor Cyan
+    Write-Host "--- Benchmark 1: Staging 100 Files ---"
     for ($i = 1; $i -le 100; $i++) {
         "Content of file $i - some text to make it realistic" |
             Set-Content -Path ("file{0}.txt" -f $i)
     }
     Measure-Bench "Stage 100 files" { & java -jar $TimeTree add *.txt > $null }
 
-    Write-Host "--- Benchmark 2: Commit 100 Files ---" -ForegroundColor Cyan
+    Write-Host "--- Benchmark 2: Commit 100 Files ---"
     Measure-Bench "Commit 100 files" { & java -jar $TimeTree commit -m "Add 100 files" > $null }
 
-    Write-Host "--- Benchmark 3: Diff Large Text File ---" -ForegroundColor Cyan
+    Write-Host "--- Benchmark 3: Diff Large Text File ---"
     Write-Host "Creating test file for diff..."
     $diffLines =
     for ($i = 1; $i -le 1000; $i++) {
@@ -104,7 +109,7 @@ try {
 
     Measure-Bench "Diff text file (5 line changes)" { & java -jar $TimeTree diff $commit1 $commit2 > $null }
 
-    Write-Host "--- Benchmark 4: Checkout 1000 Files ---" -ForegroundColor Cyan
+    Write-Host "--- Benchmark 4: Checkout 1000 Files ---"
     & java -jar $TimeTree branch test-branch > $null
     for ($i = 101; $i -le 1100; $i++) {
         "File $i content" | Set-Content -Path ("checkout-test-{0}.txt" -f $i)
@@ -114,32 +119,48 @@ try {
 
     Measure-Bench "Checkout 1000 files" { & java -jar $TimeTree checkout master > $null }
 
-    Write-Host "--- Benchmark 5: Create 1000 Commits ---" -ForegroundColor Cyan
+    Write-Host "--- Benchmark 5: Create 200 Commits ---"
     & java -jar $TimeTree checkout test-branch > $null
+
+    $commitCount = 200
     $swCommits = [System.Diagnostics.Stopwatch]::StartNew()
-    for ($i = 1; $i -le 1000; $i++) {
+    for ($i = 1; $i -le $commitCount; $i++) {
         "Commit $i" | Set-Content -Path ("commit-{0}.txt" -f $i)
+
         & java -jar $TimeTree add ("commit-{0}.txt" -f $i) > $null 2>$null
+        if ($LASTEXITCODE -ne 0) {
+            throw "TimeTree add failed at commit $i with exit code $LASTEXITCODE"
+        }
+
         & java -jar $TimeTree commit -m ("Commit {0}" -f $i) > $null 2>$null
-        if ($i % 100 -eq 0) {
-            Write-Host -NoNewline "`rCreating commits... $i/1000"
+        if ($LASTEXITCODE -ne 0) {
+            throw "TimeTree commit failed at commit $i with exit code $LASTEXITCODE"
+        }
+
+        if ($i % 50 -eq 0) {
+            $progress = "Creating commits... {0}/{1}" -f $i, $commitCount
+            Write-Host -NoNewline "`r$progress"
         }
     }
     Write-Host ""
     $swCommits.Stop()
     $commitSeconds = $swCommits.Elapsed.TotalSeconds
-    $BenchDescriptions.Add("Create 1000 commits") | Out-Null
-    $BenchTimes.Add($commitSeconds) | Out-Null
-    Write-Host ("`u2713 Created 1000 commits in {0:N3} seconds`n" -f $commitSeconds) -ForegroundColor Green
+    $BenchDescriptions.Add("Create 200 commits") | Out-Null
+    $BenchTimes.Add($commitSeconds)             | Out-Null
 
-    Write-Host "--- Benchmark 6: Log 1000 Commits ---" -ForegroundColor Cyan
-    Measure-Bench "Log 1000 commits" { & java -jar $TimeTree log --all > $null }
+    $commitMsg = "Created 200 commits in {0:N3} seconds" -f $commitSeconds
+    Write-Host $commitMsg
+    Write-Host ""
 
-    Write-Host "--- Summary ---" -ForegroundColor Cyan
+    Write-Host "--- Benchmark 6: Log commits ---"
+    Measure-Bench "Log commits" { & java -jar $TimeTree log --all > $null }
+
+    Write-Host "--- Summary ---"
     Write-Host ("{0,-35} {1,12}" -f "Benchmark", "Time (s)")
     Write-Host ("{0,-35} {1,12}" -f "---------", "--------")
     for ($i = 0; $i -lt $BenchDescriptions.Count; $i++) {
-        Write-Host ("{0,-35} {1,12:N3}" -f $BenchDescriptions[$i], $BenchTimes[$i])
+        $line = "{0,-35} {1,12:N3}" -f $BenchDescriptions[$i], $BenchTimes[$i]
+        Write-Host $line
     }
     Write-Host ""
 }
