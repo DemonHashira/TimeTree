@@ -7,7 +7,7 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 
 /**
- * Provides operations for working with refs (branches and tags).
+ * Manages HEAD and branch references in the repository.
  */
 object Refs {
     data class Head(
