@@ -33,11 +33,18 @@ Tests various performance aspects:
 - Log 1000 commits
 
 ### Run:
+
+**Note:** On Linux and macOS, the script must be made executable first:
 ```bash
-# Linux/Mac:
+chmod +x scripts/benchmark.sh
+```
+
+Then run:
+```bash
+# Linux/macOS:
 ./scripts/benchmark.sh
 
-# Windows:
+# Windows (PowerShell):
 .\scripts\powershell\benchmark.ps1
 ```
 
