@@ -1,6 +1,6 @@
 # TimeTree Benchmark Scripts
 
-## Quick Benchmark (30 seconds)
+## Quick Benchmark (1-3 seconds)
 
 Tests basic performance:
 - Add 100 files
@@ -59,4 +59,3 @@ Then run:
 - Scripts automatically build the project
 - Tests run in isolated directories
 - Cleanup happens automatically
-- First run includes JVM warmup overhead
