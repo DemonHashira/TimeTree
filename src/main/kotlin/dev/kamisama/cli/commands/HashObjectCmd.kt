@@ -9,8 +9,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 /**
- * Diagnostic command: prints the SHA-1 ids using
- * (a) git-style header and (b) TimeTree domain-separated header.
+ * Computes the object hash for a file in both Git-style and TimeTree-style.
  */
 class HashObjectCmd :
     CliktCommand(
@@ -25,11 +24,11 @@ class HashObjectCmd :
         require(Files.isRegularFile(p)) { "Not a regular file: $p" }
         val bytes = Files.readAllBytes(p)
 
-        // a) Git-style: "blob <size>\\0" + content
+        // Git-style: "blob <size>\\0" + content
         val gitHeader = "blob ${bytes.size}\u0000".toByteArray()
         val gitId = HashAlgorithm.computeAll(gitHeader + bytes).toHex()
 
-        // b) TimeTree-style: "timetree:v1\\0blob <size>\\0" + content
+        // TimeTree-style: "timetree:v1\\0blob <size>\\0" + content
         val ttHeader = ObjectHeaders.blobHeader(bytes.size.toLong())
         val ttId = HashAlgorithm.computeAll(ttHeader + bytes).toHex()
 

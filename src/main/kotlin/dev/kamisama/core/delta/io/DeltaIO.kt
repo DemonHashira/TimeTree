@@ -17,7 +17,7 @@ object DeltaIO {
     private const val MAX_OPS = 10_000_000
     private const val MAX_INSERT_LENGTH = 100 * 1024 * 1024
 
-    /** Writes delta to the output stream in binary format. */
+    // Writes delta to the output stream in binary format.
     fun write(
         delta: Delta,
         out: OutputStream,
@@ -43,7 +43,7 @@ object DeltaIO {
         }
     }
 
-    /** Reads delta from input stream. */
+    // Reads delta from input stream.
     fun read(input: InputStream): Delta {
         val magic = BinaryIO.readBytes(input, 5)
         if (!magic.contentEquals(MAGIC)) {
@@ -86,7 +86,9 @@ object DeltaIO {
                     ops.add(DeltaOp.Copy(offset, length.toInt()))
                 }
 
-                else -> throw IllegalArgumentException("Unknown delta op tag: $tag")
+                else -> {
+                    throw IllegalArgumentException("Unknown delta op tag: $tag")
+                }
             }
         }
 

@@ -48,7 +48,7 @@ object Status {
             }
         }
 
-        // Lazy evaluation: Only hash tracked files to check for modifications
+        // Lazy evaluation, only hash tracked files to check for modifications
         for ((path, indexId) in index) {
             val filePath = root.resolve(path)
             if (Files.exists(filePath) && Files.isRegularFile(filePath)) {

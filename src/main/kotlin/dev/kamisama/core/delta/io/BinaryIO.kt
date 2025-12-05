@@ -8,7 +8,7 @@ import java.io.OutputStream
  * Binary I/O utilities for delta serialization.
  */
 internal object BinaryIO {
-    /** Writes 32-bit integer in big-endian format. */
+    // Writes 32-bit integer in big-endian format.
     fun writeU32(
         out: OutputStream,
         value: Int,
@@ -19,7 +19,7 @@ internal object BinaryIO {
         out.write(value and 0xFF)
     }
 
-    /** Reads 32-bit integer in big-endian format. */
+    // Reads 32-bit integer in big-endian format.
     fun readU32(input: InputStream): Int {
         val b0 = input.read()
         val b1 = input.read()
@@ -31,7 +31,7 @@ internal object BinaryIO {
         return (b0 shl 24) or (b1 shl 16) or (b2 shl 8) or b3
     }
 
-    /** Reads exact byte count from the stream. */
+    // Reads exact byte count from the stream.
     fun readBytes(
         input: InputStream,
         count: Int,

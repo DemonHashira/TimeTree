@@ -33,10 +33,12 @@ class BranchCmd(
             delete && branchName != null -> {
                 deleteBranch(repo, branchName!!)
             }
+
             // Create branch
             branchName != null -> {
                 createBranch(repo, branchName!!)
             }
+
             // List branches
             else -> {
                 listBranches(repo)

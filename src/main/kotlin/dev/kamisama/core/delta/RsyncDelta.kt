@@ -47,6 +47,7 @@ class RsyncDelta(
         return Signature(blockSize, blocks)
     }
 
+    // Creates a delta for a given signature.
     override fun makeDelta(
         target: InputStream,
         sig: Signature,
@@ -110,6 +111,7 @@ class RsyncDelta(
         return Delta(sig.blockSize, coalesceOps(ops))
     }
 
+    // Applies a delta to a basis file.
     override fun applyDelta(
         basisPath: Path,
         delta: Delta,
@@ -144,6 +146,7 @@ class RsyncDelta(
         }
     }
 
+    // Creates a delta for an empty signature.
     private fun makeDeltaForEmptySignature(
         target: InputStream,
         blockSize: Int,
@@ -241,6 +244,7 @@ class RsyncDelta(
         }
     }
 
+    // Initializes the rolling window with a single byte.
     private fun initWindowWithByte(
         byte: Byte,
         window: RingBuffer,
@@ -250,6 +254,7 @@ class RsyncDelta(
         roller.init(byteArrayOf(byte), 0, 1)
     }
 
+    // Fills the rolling window up to block size.
     private fun fillWindow(
         target: InputStream,
         window: RingBuffer,

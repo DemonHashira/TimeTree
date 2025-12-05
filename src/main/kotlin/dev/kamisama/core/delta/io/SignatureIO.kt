@@ -12,7 +12,7 @@ import java.io.OutputStream
 object SignatureIO {
     private val MAGIC = byteArrayOf('T'.code.toByte(), 'T'.code.toByte(), 'S'.code.toByte(), 'G'.code.toByte(), 0x01)
 
-    /** Writes signature to the output stream. */
+    // Writes signature to the output stream.
     fun write(
         sig: Signature,
         out: OutputStream,
@@ -28,7 +28,7 @@ object SignatureIO {
         }
     }
 
-    /** Reads signature from the input stream. */
+    // Reads signature from the input stream.
     fun read(input: InputStream): Signature {
         val magic = BinaryIO.readBytes(input, 5)
         if (!magic.contentEquals(MAGIC)) {

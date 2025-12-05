@@ -80,7 +80,10 @@ object Checkout {
                 if (path.startsWith(meta)) return@forEach
 
                 when {
-                    Files.isRegularFile(path) -> Files.delete(path)
+                    Files.isRegularFile(path) -> {
+                        Files.delete(path)
+                    }
+
                     Files.isDirectory(path) && path != root && path != meta -> {
                         directoriesToRemove.add(path)
                     }

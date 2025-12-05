@@ -31,7 +31,7 @@ timetree status
 
 ## Installation
 
-**Prerequisites:** Java JDK 11 or higher (Java 21 recommended - latest LTS version). Check with:
+**Prerequisites:** Java JDK 11 or higher (Java 21 recommended). Note: Java 25 does not work due to Gradle compatibility issues. Check with:
 ```bash
 java -version
 ```
@@ -59,6 +59,8 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 ## Commands
 
+### Core Version Control
+
 | Command | Description |
 |---------|-------------|
 | `init` | Initialize a new repository |
@@ -71,6 +73,15 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 | `branch -l` | List branches |
 | `branch -d <name>` | Delete a branch |
 | `checkout <branch>` | Switch branches |
+
+### Low-Level Commands
+
+| Command | Description |
+|---------|-------------|
+| `hash-object <path>` | Compute object hash for a file |
+| `sig <basis> [-o output] [-b block-size]` | Generate signature for delta compression |
+| `delta <signature> <target> [-o output]` | Create delta from signature and target |
+| `patch <basis> <delta> [-o output]` | Apply delta to reconstruct file |
 
 **Alias**: Use `tt` instead of `timetree` for shorter commands.
 
@@ -99,12 +110,6 @@ TimeTree stores project history in a `.timetree/` directory:
 **Windows (PowerShell):**
 ```powershell
 .\scripts\powershell\uninstall.ps1
-```
-
-## Building from Source
-
-```bash
-./gradlew shadowJar
 ```
 
 The JAR will be in `build/libs/timetree.jar`

@@ -32,7 +32,7 @@ object Refs {
         }
     }
 
-    // Ensure HEAD points to the given branch ref (used on the first commit in fresh repo).
+    // Ensure HEAD points to the given branch ref.
     fun ensureHeadOn(
         repo: RepoLayout,
         branchRef: String = "refs/heads/master",
