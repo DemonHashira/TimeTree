@@ -59,6 +59,7 @@ class DiffCmd(
                     val id2 = resolveCommit(repo, commit2!!)
                     showDiff(repo, id1, id2, context)
                 }
+
                 // Compare one commit with HEAD
                 commit1 != null && commit2 == null -> {
                     val id1 = resolveCommit(repo, commit1!!)
@@ -69,6 +70,7 @@ class DiffCmd(
                     }
                     showDiff(repo, id1, head.id, context)
                 }
+
                 // Compare HEAD with the working directory (or staged if --cached)
                 else -> {
                     if (cached) {
