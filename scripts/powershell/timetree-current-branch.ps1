@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+# Show current TimeTree branch for Starship prompt
 <#
     timetree-current-branch.ps1
     Helper for Starship prompt on PowerShell.
@@ -69,7 +69,7 @@ if ($headRef -match '^ref:\s+refs/heads/(.+)$') {
 }
 
 if ($headRef.Length -ge 7) {
-    $short = $headRef.Substring(0,7)
+    $short = $headRef.Substring(0, 7)
     Write-Output $short
     exit 0
 }

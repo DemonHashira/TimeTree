@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+# TimeTree Quick Performance Benchmark Script
 [CmdletBinding()]
 param ()
 

@@ -4,8 +4,9 @@
 $ErrorActionPreference = 'Stop'
 
 # Get script directory and project root
-$ScriptDir   = Split-Path -Parent $MyInvocation.MyCommand.Path
-$ProjectRoot = Split-Path -Parent $ScriptDir
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$ScriptsDir = Split-Path -Parent $ScriptDir
+$ProjectRoot = Split-Path -Parent $ScriptsDir
 
 # Change to project root
 Set-Location $ProjectRoot
